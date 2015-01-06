@@ -1,0 +1,1532 @@
+#!/usr/bin/env mythryl
+
+# Copyright (c) 2014 Michele Bini
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the version 3 of the GNU General Public License
+# as published by the Free Software Foundation.
+
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+load("DualHeightMassageTree.lib");
+load("SplayTree.lib");
+load("NaiveSplayTree.lib");
+load("MassageTree.lib");
+load("MassageTreeTimecomp.lib");
+load("MassageTree2.lib");
+load("InvertedSplayTree.lib");
+load("BiphaseSplayTreeV2.lib");
+load("OversplayTree.lib");
+load("BlendsplayTree.lib");
+load("UnbalancedBinarySearchTree.lib");
+load("json.lib");
+
+stipulate
+     package float = eight_byte_float;
+
+     to_float = float::from_int;
+
+     maximum_time_per_test = 30.0;
+     log_subdivs = 10.0;
+     
+     test_stats = TRUE;
+     test_timecomp = FALSE;
+     test_unbalanced = FALSE;
+     test_annotated = FALSE;
+     test_every_imp = FALSE;
+     test_main = TRUE;
+     test_v1 = FALSE;
+     test_v2 = FALSE;
+     test_oversplay = FALSE;
+     test_blendsplay = FALSE;
+     test_secondary = FALSE;
+     test_biphase = TRUE;
+
+     test_spreadramp = TRUE;
+     test_trapramp = TRUE;
+     test_bipass = TRUE;
+     test_tripass = FALSE;
+     test_sort_uniform = TRUE;
+     test_sort_nonuniform = TRUE;
+     test_sort_normal = FALSE;
+     test_sort_rounded_normal = FALSE;
+
+     Methods(X,Y,Z) = METHODS {
+	 empty: Void -> X, 
+	 fold: (X, ((Y, Z) -> Z), Z) -> Z, 
+	 insert: ((Y, Y) -> Order) -> (X, Y) -> X, 
+	 name: String
+     };
+
+     Lib(Z,F,I) = LIB {
+	 int:    Methods(I,Int,Int),
+	 float:  Methods(F,Float,Int)
+     };
+     
+     stipulate
+ 	  package tree = massage_tree_timecomp;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_lin;
+	  name = tree::desc + " lin";
+	  complexity = tree::complexity;
+     herein
+	 massage_tree_lin_timecomp_lib = { empty, fold, insert, name, complexity };
+	 massage_tree_lin_timecomp_lib__float = { empty, fold, insert, name, complexity };
+     end;
+
+     stipulate
+ 	  package tree = massage_tree_timecomp;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_llg;
+	  name = tree::desc + " loglog";
+	  complexity = tree::complexity;
+     herein
+	 massage_tree_llg_timecomp_lib = { empty, fold, insert, name, complexity };
+	 massage_tree_llg_timecomp_lib__float = { empty, fold, insert, name, complexity };
+     end;
+
+     stipulate
+ 	  package tree = massage_tree_timecomp;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_mas;
+	  name = tree::desc;
+	  complexity = tree::complexity;
+     herein
+	 massage_tree_timecomp_lib = { empty, fold, insert, name, complexity };
+	 massage_tree_timecomp_lib__float = { empty, fold, insert, name, complexity };
+     end;
+
+     stipulate
+	  package tree = massage_tree_timecomp;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_spl;
+	  name = "Splay tree with balancedness metadata";
+	  complexity = tree::complexity;
+     herein
+	  massage_tree_spl_timecomp_lib = { empty, fold, insert, name, complexity };
+	  massage_tree_spl_timecomp_lib__float = { empty, fold, insert, name, complexity };
+     end;
+
+     stipulate
+	  package tree = massage_tree_timecomp;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_gen;
+	  name = "Basic binary search tree with balancedness metadata";
+	  complexity = tree::complexity;
+     herein
+	  massage_tree_gen_timecomp_lib = { empty, fold, insert, name, complexity };
+	  massage_tree_gen_timecomp_lib__float = { empty, fold, insert, name, complexity };
+     end;
+
+     stipulate
+ 	  package tree = dual_height_massage_tree;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_mas;
+	  name = tree::desc;
+     herein
+	 dual_height_massage_tree_lib = { empty, fold, insert, name };
+	 dual_height_massage_tree_lib__float = { empty, fold, insert, name };
+     end;
+
+### Massage tree.pkg
+
+     stipulate
+ 	  package tree = massage_tree;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_lin;
+	  name = tree::desc + " lin";
+     herein
+	 massage_tree_lin_lib = { empty, fold, insert, name };
+	 massage_tree_lin_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+ 	  package tree = massage_tree;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_llg;
+	  name = tree::desc + " loglog";
+     herein
+	 massage_tree_llg_lib = { empty, fold, insert, name };
+	 massage_tree_llg_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+ 	  package tree = massage_tree;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_mas;
+	  name = tree::desc;
+     herein
+	 massage_tree_lib = { empty, fold, insert, name };
+	 massage_tree_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+     	  package tree = massage_tree;
+     	  fun empty() = tree::EMPTY;
+     	  fun  fold_left(tree::EMPTY, x, d) => d;
+     	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+     	  end;
+	  
+     	  fold = fold_left;
+     	  insert = tree::insert_mas;
+     	  name = tree::desc;
+     	  fun lib() = METHODS { empty, fold, insert, name };
+     herein
+	  fixed_lib = LIB {
+	      int => lib(),
+	      float => lib()
+	  };
+     end;
+
+     stipulate
+	  package tree = massage_tree;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_spl;
+	  name = "Splay tree with balancedness metadata";
+     herein
+	  massage_tree_spl_lib = { empty, fold, insert, name };
+	  massage_tree_spl_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+	  package tree = massage_tree;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_gen;
+	  name = "Basic binary search tree with balancedness metadata";
+     herein
+	  massage_tree_gen_lib = { empty, fold, insert, name };
+	  massage_tree_gen_lib__float = { empty, fold, insert, name };
+     end;
+
+### MassageTree2.pkg
+
+     stipulate
+ 	  package tree = massage_tree_2;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_lin;
+	  name = tree::desc + " lin";
+     herein
+	 massage_tree_2_lin_lib = { empty, fold, insert, name };
+	 massage_tree_2_lin_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+ 	  package tree = massage_tree_2;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_mas;
+	  name = tree::desc;
+     herein
+	 massage_tree_2_lib = { empty, fold, insert, name };
+	 massage_tree_2_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+	  package tree = massage_tree_2;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_spl;
+	  name = "Splay tree with balancedness metadata";
+     herein
+	  massage_tree_2_spl_lib = { empty, fold, insert, name };
+	  massage_tree_2_spl_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+	  package tree = massage_tree_2;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  
+	  fold = fold_left;
+	  insert = tree::insert_gen;
+	  name = "Basic binary search tree with balancedness metadata";
+     herein
+	  massage_tree_2_gen_lib = { empty, fold, insert, name };
+	  massage_tree_2_gen_lib__float = { empty, fold, insert, name };
+     end;
+
+##
+     
+     stipulate
+	  package tree = naive_splay_tree;
+
+	  name    = tree::desc;
+	  empty   = tree::empty;
+	  fold    = tree::fold_left;
+	  insert  = tree::insert;
+     herein
+	  naive_splay_tree_lib = { empty, fold, insert, name };
+	  naive_splay_tree_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+     	  package tree = splay_tree;
+
+     	  name    = tree::desc;
+     	  empty   = tree::empty;
+     	  fold    = tree::fold_left;
+     	  insert  = tree::insert;
+     herein
+     	  splay_tree_lib = { empty, fold, insert, name };
+     	  splay_tree_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+	  package tree = inverted_splay_tree;
+	  name = tree::desc;
+	  empty = tree::empty;
+	  fold = tree::fold_left;
+	  insert = tree::insert;
+     herein
+	  inverted_splay_tree_lib = { empty, fold, insert, name };
+	  inverted_splay_tree_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+	  package tree = biphase_splay_tree_v2;
+	  name = tree::desc;
+	  empty = tree::empty;
+	  fold = tree::fold_left;
+	  insert = tree::insert;
+     herein
+	  biphase_splay_tree_lib = { empty, fold, insert, name };
+	  biphase_splay_tree_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+	  package tree = oversplay_tree;
+	  name = tree::desc;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  fold = fold_left;
+	  insert = tree::insert;
+     herein
+	  oversplay_tree_lib = { empty, fold, insert, name };
+	  oversplay_tree_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+	  package tree = blendsplay_tree;
+	  name = tree::desc;
+	  fun empty() = tree::EMPTY;
+	  fun  fold_left(tree::EMPTY, x, d) => d;
+	       fold_left(tree::NODE(_,l,m,r), x, d) => fold_left(l,x,x(m,fold_left(r,x,d)));
+	  end;
+	  fold = fold_left;
+	  insert = tree::insert;
+     herein
+	  blendsplay_tree_lib = { empty, fold, insert, name };
+	  blendsplay_tree_lib__float = { empty, fold, insert, name };
+     end;
+
+     stipulate
+	  package tree = unbalanced_binary_search_tree;
+	  empty = tree::empty;
+	  fold = tree::fold_left;
+	  insert = tree::insert;
+	  name = "Basic binary search tree";
+     herein
+	  unbalanced_binary_search_tree_lib = { empty, fold, insert, name };
+	  unbalanced_binary_search_tree_lib__float = { empty, fold, insert, name };
+     end;
+     
+     package tim = cpu_timer;
+
+     fun tree_lib_from_timecomp_lib({ empty, fold, insert, name, complexity })
+     = { empty, fold, insert, name };
+
+     test_time = one_word_int::to_int(time());
+     
+herein
+
+     fun timer () = {
+	 my t = tim::get_cpu_timer();
+	 my g = tim::get_elapsed_cpu_seconds;
+	 my start = g(t);
+	 fn () = {
+	     my stop = g(t);
+	     (stop - start);
+	 };
+     };
+	      
+     fun xorsum(a,b) = {
+	 # printf "[%d]\n" a;
+	 (a ^ 0x02843224) + b;
+     };
+
+     fun floatxorsum(a,b) = {
+	 x = eight_byte_float::to_mantissa_exponent(a);
+	 m = floor(16777216.0 // x.mantissa);
+	 # printf "[%d]\n" a;
+	 (x.exponent ^ m ^ 0x02843224) + b;
+     };
+     
+
+     print "\n\n";
+     
+     stipulate
+	  package flo = eight_byte_float;
+	  
+	  fun uniq(a!b!r) => if (a == b) uniq(a!r); else a!uniq(b!r); fi; uniq(x) => x; end;
+	  fun a | b = fn x = b(a(x));
+     herein
+	  fun  make_sizes(n, l) = {
+	      s = (flo::from_int | (fn x = exp(x*math::ln(math::exp(math::ln(2.0) // log_subdivs)))) | floor)(n);
+	      make_sizes(n+1, s!l);
+	  } except
+	      OVERFLOW => uniq(reverse(l));
+	  end;
+	  sizes = make_sizes(1, NIL);
+     end;
+
+     Loop(X,Y) = LOOP(Loop(X,Y) -> X -> Y);
+     fun loop args loop = loop (LOOP loop) args;
+     fun swap2 a b c = a c b;
+     fun  xlist1(NIL) => fn f = ();
+	  xlist1(a!b) => fn f = f(a,b);
+     end;
+     fun  xlist1loop(NIL) => fn f = ();
+	  xlist1loop(a!b) => fn f = loop (a,b) f;
+     end;
+     
+     fun test__trapramp ({ empty, fold, insert, name }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+	 rng = random::make_random_number_generator(409323494,28038502);
+     
+	 random_int = fn () = random::int rng;
+
+	 print "\nTesting trapramp\n\n";
+	 printf "Tree implementation: %s\n\n" name;
+
+	 fun results timer t = {
+	     tm = timer();
+	     ck = (fold(t, xorsum, 0) & 0xffff);
+	     printf "checksum:      %X\n"    ck;
+	     printf "elapsed time:  %g s\n"  tm;
+
+	     {
+		 include json;
+		 prin(OBJ([
+			   ("name", STR "trapramp_v2"),
+			   ("implementation", STR name),
+			   ("elements_count", INT size),
+			   ("checksum", INT ck),
+			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+		 ]));
+	     };
+	     
+	     print "\n";
+
+	     # Loop until running time < 20 s
+	     case sizelist
+		  a!b => if (tm <= maximum_time_per_test)
+		       loop (LOOP loop) (a,b);
+		  else
+		       ();
+		  fi;
+		  _ => ();
+	     esac;
+	 };
+
+	 insert = insert int::compare;
+     
+	 fun insert_loop results (t_s, n_s) = insert_loop_1(t_s, n_s) where
+	      fun trap(t, n) = trap'(n) where
+		   fun  trap'(0) => results(t);
+			trap'(n) => {
+			    insert(t, n_s);
+			    trap'(n - 1);
+			};
+		   end;
+	      end;
+	      fun  insert_loop_1(t,0) => trap(t, n_s);
+		   insert_loop_1(t,n) => insert_loop_1(insert(t, n), n - 1);
+	      end;
+	 end;
+
+	 insert_loop (results(timer())) (empty(), size);
+     });
+     
+     fun test__spreadramp ({ empty, fold, insert, name }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+	 rng = random::make_random_number_generator(409323494,28038502);
+     
+	 random_int = fn () = random::int rng;
+
+	 print "\nTesting spreadramp\n\n";
+	 printf "Tree implementation: %s\n\n" name;
+
+	 fun results timer t = {
+	     tm = timer();
+	     ck = (fold(t, xorsum, 0) & 0xffff);
+	     printf "checksum:      %X\n"    ck;
+	     printf "elapsed time:  %g s\n"  tm;
+	     printf "frequency:     %g Hz\n"  (to_float(size) // tm);
+
+	     {
+		 include json;
+		 prin(OBJ([
+			   ("name", STR "spreadramp"),
+			   ("implementation", STR name),
+			   ("elements_count", INT size),
+			   ("checksum", INT ck),
+			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+		 ]));
+	     };
+	     
+	     print "\n";
+
+	     # Loop until running time < 20 s
+	     case sizelist
+		  a!b => if (tm <= maximum_time_per_test)
+		       loop (LOOP loop) (a,b);
+		  else
+		       ();
+		  fi;
+		  _ => ();
+	     esac;
+	 };
+
+	 insert = insert int::compare;
+     
+	 fun insert_loop results (t_s, n_s) = insert_loop_1(t_s, n_s) where
+	      fun trap(t, n) = trap'(n) where
+		   fun  trap'(0) => results(t);
+			trap'(n) => {
+			    insert(t, n);
+			    trap'(n - 1);
+			};
+		   end;
+	      end;
+	      fun  insert_loop_1(t,0) => trap(t, n_s);
+		   insert_loop_1(t,n) => insert_loop_1(insert(t, n), n - 1);
+	      end;
+	 end;
+
+	 insert_loop (results(timer())) (empty(), size);
+     });
+
+     fun test__bipass ({ empty, fold, insert, name }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+	 rng = random::make_random_number_generator(409323494,28038502);
+     
+	 random_int = fn () = random::int rng;
+
+	 print "\nTesting bipass\n\n";
+	 printf "Tree implementation: %s\n\n" name;
+
+	 fun results timer t = {
+	     tm = timer();
+	     ck = (fold(t, xorsum, 0) & 0xffff);
+	     printf "checksum:      %X\n"    ck;
+	     printf "elapsed time:  %g s\n"  tm;
+
+	     {
+		 include json;
+		 prin(OBJ([
+			   ("name", STR "bipass"),
+			   ("implementation", STR name),
+			   ("elements_count", INT size),
+			   ("checksum", INT ck),
+			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+		 ]));
+	     };
+	     
+	     print "\n";
+
+	     # Loop until running time < 20 s
+	     case sizelist
+		  a!b => if (tm <= maximum_time_per_test)
+		       loop (LOOP loop) (a,b);
+		  else
+		       ();
+		  fi;
+		  _ => ();
+	     esac;
+	 };
+
+	 insert = insert int::compare;
+     
+	 fun insert_loop results (t_s, n_s) = insert_loop_1(t_s, n_s) where
+	      fun  insert_loop_2(t,0) => results(t);
+		   insert_loop_2(t,n) => insert_loop_2(insert(t, n), n - 1);
+	      end;
+	      fun  insert_loop_1(t,0) => insert_loop_2(t, n_s);
+		   insert_loop_1(t,n) => insert_loop_1(insert(t, n), n - 1);
+	      end;
+	 end;
+
+	 insert_loop (results(timer())) (empty(), size);
+     });
+
+     fun timecomp__bipass ({ empty, fold, insert, name, complexity }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+	 rng = random::make_random_number_generator(409323494,28038502);
+     
+	 random_int = fn () = random::int rng;
+
+	 print "\nTesting bipass\n\n";
+	 printf "Tree implementation: %s\n\n" name;
+
+	 fun results (timer, complexity) (t,mc) = {
+	     tm = timer();
+	     tc = complexity();
+	     ck = (fold(t, xorsum, 0) & 0xffff);
+	     printf "checksum:      %X\n"    ck;
+	     printf "elapsed time:  %g s\n"  tm;
+
+	     {
+		 include json;
+		 prin(OBJ([
+			   ("name", STR "bipass"),
+			   ("implementation", STR name),
+			   ("total_complexity", INT tc),
+			   ("maximum_complexity", INT mc),
+			   ("elements_count", INT size),
+			   ("checksum", INT ck),
+			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+		 ]));
+	     };
+	     
+	     print "\n";
+
+	     # Loop until running time < 20 s
+	     case sizelist
+		  a!b => if (tm <= maximum_time_per_test)
+		       loop (LOOP loop) (a,b);
+		  else
+		       ();
+		  fi;
+		  _ => ();
+	     esac;
+	 };
+
+	 insert = insert int::compare;
+     
+	 fun insert_loop results (t_s, n_s, mc) = insert_loop_1(t_s, n_s, mc) where
+	      fun  insert_loop_2(t,0,mc) => results(t,mc);
+		   insert_loop_2(t,n,mc) => {
+		       cm = complexity();
+		       t = insert(t, n);
+		       cm = cm();
+		       insert_loop_2(t, n - 1, max(cm, mc));
+		   };
+	      end;
+	      fun  insert_loop_1(t,0,mc) => insert_loop_2(t, n_s, mc);
+		   insert_loop_1(t,n,mc) => {
+		       cm = complexity();
+		       t = insert(t, n);
+		       cm = cm();
+		       insert_loop_1(t, n - 1, max(cm, mc));
+		   };
+	      end;
+	 end;
+
+	 insert_loop (results(timer(), complexity())) (empty(), size, 0);
+     });
+     
+     fun test__tree_sort_uniformly_random_numbers ({ empty, fold, insert, name }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+	 rng = random::make_random_number_generator(409323494,28038502);
+     
+	 random_int = fn () = random::int rng;
+
+	 print "\nTesting tree sort of uniformly random numbers\n\n";
+	 printf "Tree implementation: %s\n\n" name;
+
+	 fun results timer t = {
+	     tm = timer();
+	     ck = (fold(t, xorsum, 0) & 0xffff);
+	     printf "checksum:      %X\n"    ck;
+	     printf "elapsed time:  %g s\n"  tm;
+
+	     {
+		 include json;
+		 prin(OBJ([
+			   ("name", STR "tree_sort_uniformly_random_numbers"),
+			   ("implementation", STR name),
+			   ("elements_count", INT size),
+			   ("checksum", INT ck),
+			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+		 ]));
+	     };
+	     
+	     print "\n";
+
+	     # Loop until running time < 20 s
+	     case sizelist
+		  a!b => if (tm <= maximum_time_per_test)
+		       loop (LOOP loop) (a,b);
+		  else
+		       ();
+		  fi;
+		  _ => ();
+	     esac;
+	 };
+
+	 insert = insert int::compare;
+     
+	 fun insert_loop results = insert_loop where
+	      fun  insert_loop(t,0) => results(t);
+		   insert_loop(t,n) => insert_loop(insert(t, random_int()), n - 1);
+	      end;
+	 end;
+
+	 insert_loop (results(timer())) (empty(), size);
+     });
+
+     fun test__tree_sort_nonuniform_random_numbers({ empty, fold, insert, name }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+	 rng = random::make_random_number_generator(409323494,28038502);
+     
+	 size_loc = size/200;
+
+	 size_loc = (size_loc == 0) ?? 1 :: size_loc;
+	 
+	 random_int = fn (x) = x + (random::int rng) % size_loc;
+
+	 print "\nTesting tree sort of non-uniform random numbers\n\n";
+	 printf "Tree implementation: %s\n\n" name;
+
+	 fun results timer t = {
+	     tm = timer();
+	     c = (fold(t, xorsum, 0) & 0xffff);
+	     printf "checksum:      %X\n"    c;
+	     printf "elapsed time:  %g s\n"  tm;
+
+	     {
+		 include json;
+		 prin(OBJ([
+			   ("name",STR "tree_sort_nonuniform_random_numbers"),
+			   ("implementation", STR name),
+			   ("elements_count", INT size),
+			   ("checksum", INT c),
+			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+		 ]));
+	     };
+
+	     # Loop until running time < 20 s
+	     case sizelist
+		  a!b => if (tm <= maximum_time_per_test)
+		       loop (LOOP loop) (a,b);
+		  else
+		       ();
+		  fi;
+		  _ => ();
+	     esac;
+	     
+	     print "\n";
+	 };
+
+	 insert = insert int::compare;
+     
+	 fun insert_loop results = insert_loop where
+	      fun  insert_loop(t,0) => results(t);
+		   insert_loop(t,n) => insert_loop(insert(t, random_int(n)), n - 1);
+	      end;
+	 end;
+
+	 insert_loop (results(timer())) (empty(), size);
+     });
+
+     fun test__tree_sort_normal_random_numbers({ empty, fold, insert, name }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+     	 rng = random::make_random_number_generator(409323494,28038502);
+     
+     	 print "\nTesting tree sort of normal random numbers\n\n";
+     	 printf "Tree implementation: %s\n\n" name;
+
+     	 fun results timer t = {
+     	     tm = timer();
+     	     c = (fold(t, floatxorsum, 0) & 0xffff);
+     	     printf "checksum:      %X\n"    c;
+     	     printf "elapsed time:  %g s\n"  tm;
+
+     	     {
+     		 include json;
+     		 prin(OBJ([
+     			   ("name",STR "tree_sort_normal_random_numbers"),
+     			   ("implementation", STR name),
+     			   ("elements_count", INT size),
+     			   ("checksum", INT c),
+     			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+     		 ]));
+     	     };
+
+     	     # Loop until running time < 20 s
+     	     case sizelist
+     		  a!b => if (tm <= maximum_time_per_test)
+     		       loop (LOOP loop) (a,b);
+     		  else
+     		       ();
+     		  fi;
+     		  _ => ();
+     	     esac;
+	     
+     	     print "\n";
+     	 };
+
+     	 insert = insert eight_byte_float::compare;
+     
+     	 fun insert_loop results = insert_loop where
+     	      fun  insert_loop(t,0) => results(t);
+     		   insert_loop(t,n) => {
+     		       # Generate normally distributed random numbers using Box-Muller transform
+     		       fun gen() = {
+     			   x = random::float rng;
+     			   y = random::float rng;
+     			   w = x * x + y * y;
+     			   if ((w > 0.0) and (w < 1.0))
+     				w = sqrt(-2.0 * ln(w)) // w;
+     				(x*w, y*w);
+     			   else
+     				gen();
+     			   fi;
+     		       };
+     		       my (a, b) = gen();
+     		       t = insert(t, a);
+     		       t = insert(t, b);
+     		       insert_loop(t, n - 1);
+     		   };
+     	      end;
+     	 end;
+
+     	 insert_loop (results(timer())) (empty(), size / 2);
+     });
+
+     fun test__tree_sort_rounded_normal_random_numbers({ empty, fold, insert, name }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+     	 rng = random::make_random_number_generator(409323494,28038502);
+     
+     	 print "\nTesting tree sort of rounded normal random numbers (test v12)\n\n";
+     	 printf "Tree implementation: %s\n\n" name;
+
+     	 fun results timer t = {
+     	     tm = timer();
+     	     c = (fold(t, xorsum, 0) & 0xffff);
+     	     printf "checksum:      %X\n"    c;
+     	     printf "elapsed time:  %g s\n"  tm;
+
+     	     {
+     		 include json;
+     		 prin(OBJ([
+     			   ("name",STR "tree_sort_rounded_normal_random_numbers_v12"),
+     			   ("implementation", STR name),
+     			   ("elements_count", INT size),
+     			   ("checksum", INT c),
+     			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+     		 ]));
+     	     };
+
+     	     # Loop until running time < 20 s
+     	     case sizelist
+     		  a!b => if (tm <= maximum_time_per_test)
+     		       loop (LOOP loop) (a,b);
+     		  else
+     		       ();
+     		  fi;
+     		  _ => ();
+     	     esac;
+	     
+     	     print "\n";
+     	 };
+
+     	 insert = insert int::compare;
+
+	 scale = eight_byte_float::from_int(size) * 0.002;
+     
+     	 fun insert_loop results = insert_loop where
+     	      fun  insert_loop(t,0) => results(t);
+     		   insert_loop(t,n) => {
+     		       # Generate normally distributed random numbers using Box-Muller transform
+     		       fun gen() = {
+     			   x = random::float rng;
+     			   y = random::float rng;
+     			   w = x * x + y * y;
+     			   if ((w > 0.0) and (w < 1.0))
+     				w = sqrt(-2.0 * ln(w)) // w;
+     				(x*w, y*w);
+     			   else
+     				gen();
+     			   fi;
+     		       };
+     		       my (a, b) = gen();
+     		       t = insert(t, floor(a * scale));
+     		       t = insert(t, floor(b * scale));
+		       # printf "%d %d" (floor(a * scale)) (floor(b * scale));
+     		       insert_loop(t, n - 1);
+     		   };
+     	      end;
+     	 end;
+
+     	 insert_loop (results(timer())) (empty(), size / 2);
+     });
+
+     fun timecomp__tree_sort_uniformly_random_numbers ({ empty, fold, insert, name , complexity }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+	 rng = random::make_random_number_generator(409323494,28038502);
+     
+	 random_int = fn () = random::int rng;
+
+	 print "\nTesting tree sort of uniformly random numbers\n\n";
+	 printf "Tree implementation: %s\n\n" name;
+
+	 fun results (timer, complexity) (t,mc) = {
+	     tm = timer();
+	     tc = complexity();
+	     ck = (fold(t, xorsum, 0) & 0xffff);
+	     printf "checksum:      %X\n"    ck;
+	     printf "elapsed time:  %g s\n"  tm;
+
+	     {
+		 include json;
+		 prin(OBJ([
+			   ("name", STR "tree_sort_uniformly_random_numbers"),
+			   ("implementation", STR name),
+			   ("total_complexity", INT tc),
+			   ("maximum_complexity", INT mc),
+			   ("elements_count", INT size),
+			   ("checksum", INT ck),
+			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+		 ]));
+	     };
+	     
+	     print "\n";
+
+	     # Loop until running time < 20 s
+	     case sizelist
+		  (a!b) => if (tm <= maximum_time_per_test)
+		       loop(LOOP loop)(a,b); ();
+		  else
+		       ();
+		  fi;
+		  _ => ();
+	     esac;
+	 };
+
+	 insert = insert int::compare;
+     
+	 fun insert_loop results = insert_loop where
+	      fun  insert_loop(t,0,mc) => results(t,mc);
+		   insert_loop(t,n,mc) => {
+		       cm = complexity();
+		       t = insert(t, random_int());
+		       cm = cm();
+		       insert_loop(t, n - 1, max(cm, mc));
+		   };
+	      end;
+	 end;
+
+	 insert_loop (results(timer(), complexity())) (empty(), size, 0);
+     });
+
+     fun timecomp__tree_sort_nonuniform_random_numbers({ empty, fold, insert, name, complexity }) = (xlist1loop sizes) (fn (LOOP loop) = fn (size, sizelist) = {
+	 rng = random::make_random_number_generator(409323494,28038502);
+     
+	 size_loc = size/200;
+
+	 size_loc = (size_loc == 0) ?? 1 :: size_loc;
+	 
+	 random_int = fn (x) = x + (random::int rng) % size_loc;
+
+	 print "\nTesting tree sort of non-uniform random numbers\n\n";
+	 printf "Tree implementation: %s\n\n" name;
+
+	 fun results (timer, complexity) (t,mc) = {
+	     tm = timer();
+	     tc = complexity();
+	     c = (fold(t, xorsum, 0) & 0xffff);
+	     printf "checksum:      %X\n"    c;
+	     printf "elapsed time:  %g s\n"  tm;
+
+	     {
+		 include json;
+		 prin(OBJ([
+			   ("name", STR "tree_sort_nonuniform_random_numbers"),
+			   ("implementation", STR name),
+			   ("total_complexity", INT tc),
+			   ("maximum_complexity", INT mc),
+			   ("elements_count", INT size),
+			   ("checksum", INT c),
+			   ("elapsed_seconds", FLO tm),
+			   ("run", INT test_time)
+		 ]));
+	     };
+	     
+	     print "\n";
+
+	     # Loop until running time < 20 s
+	     case sizelist
+		  a!b => if (tm <= maximum_time_per_test)
+		       loop(LOOP loop)(a,b); ();
+		  else
+		       ();
+		  fi;
+		  _ => ();
+	     esac;
+	 };
+
+	 insert = insert int::compare;
+     
+	 fun insert_loop results = insert_loop where
+	      fun  insert_loop(t,0,mc) => results(t,mc);
+		   insert_loop(t,n,mc) => {
+		       cm = complexity();
+		       t = insert(t, random_int(n));
+		       cm = cm();
+		       insert_loop(t, n - 1, max(cm, mc));
+		   };
+	      end;
+	 end;
+
+	 insert_loop (results(timer(), complexity())) (empty(), size, 0);
+     });
+
+     fun verify_lib ({ empty, fold, insert, name }) = {
+
+	 rng = random::make_random_number_generator(409323494,28038502);
+
+	 random_int = fn () = random::int rng;
+
+	 insert = insert int::compare;
+
+	 fun results(t) = {
+
+	     exception BROKEN_LIB;
+
+	     c = (fold(t, xorsum, 0));
+
+	     if (c != 0x2867B937)
+		  printf "Checksum failed for %s: %x" name c;
+	 	  raise exception BROKEN_LIB;
+	     fi;
+
+	 };
+	 
+	 fun  insert_loop(t,NIL) => results(t);
+	      insert_loop(t,c!r) => insert_loop(insert(t, c), r);
+	 end;
+
+	 fun create_list() = {
+	     fun  make_list(0, r) => r;
+		  make_list(n, r) => make_list(n - 1, random_int()!r);
+	     end;
+	     
+	     l = make_list(800, NIL);
+	     l = l @ l @ l;
+	     l;
+	 };
+
+	 insert_loop(empty(), create_list());
+     };
+
+     verify_lib(tree_lib_from_timecomp_lib massage_tree_gen_timecomp_lib);
+     verify_lib(tree_lib_from_timecomp_lib massage_tree_spl_timecomp_lib);
+     verify_lib(tree_lib_from_timecomp_lib massage_tree_timecomp_lib);
+     verify_lib(tree_lib_from_timecomp_lib massage_tree_llg_timecomp_lib);
+     verify_lib(tree_lib_from_timecomp_lib massage_tree_lin_timecomp_lib);
+
+     verify_lib(unbalanced_binary_search_tree_lib);
+     verify_lib(splay_tree_lib);
+     verify_lib(naive_splay_tree_lib);
+     verify_lib(inverted_splay_tree_lib);
+     verify_lib(biphase_splay_tree_lib);
+     verify_lib(oversplay_tree_lib);
+     verify_lib(blendsplay_tree_lib);
+
+     verify_lib(massage_tree_gen_lib);
+     verify_lib(massage_tree_spl_lib);
+     verify_lib(massage_tree_lib);
+     verify_lib(massage_tree_llg_lib);
+     verify_lib(massage_tree_lin_lib);
+
+     verify_lib(massage_tree_2_gen_lib);
+     verify_lib(massage_tree_2_spl_lib);
+     verify_lib(massage_tree_2_lib);
+     verify_lib(massage_tree_2_lin_lib);
+
+     verify_lib(dual_height_massage_tree_lib);
+
+     if test_stats
+	  if test_trapramp
+	       if test_unbalanced
+		    test__trapramp unbalanced_binary_search_tree_lib;
+	       fi;
+	       
+	       if test_main
+		    if test_every_imp
+			 test__trapramp dual_height_massage_tree_lib;
+			 test__trapramp splay_tree_lib;
+			 test__trapramp naive_splay_tree_lib;
+			 test__trapramp inverted_splay_tree_lib;
+		    fi;
+		    if test_biphase
+			 test__trapramp biphase_splay_tree_lib;
+		    fi;
+		    if test_v1
+			 test__trapramp massage_tree_lib;
+			 if test_secondary
+			      test__trapramp massage_tree_llg_lib;
+			      test__trapramp massage_tree_lin_lib;
+			 fi;
+		    fi;
+		    if test_v2
+			 if test_secondary
+			      test__trapramp massage_tree_2_lib;
+			 fi;
+			 test__trapramp massage_tree_2_lin_lib;
+		    fi;
+		    if test_oversplay
+			 test__trapramp oversplay_tree_lib;
+		    fi;
+		    if test_blendsplay
+			 test__trapramp blendsplay_tree_lib;
+		    fi;
+	       fi;
+	       
+	       if test_annotated
+		    if test_v1
+			 test__trapramp massage_tree_gen_lib;
+			 test__trapramp massage_tree_spl_lib;
+		    fi;
+	       fi;
+	       
+	       # if test_timecomp
+	       # 	    if test_every_imp
+	       # 		 if test_v1
+	       # 		      timecomp__trapramp massage_tree_gen_timecomp_lib;
+	       # 		      timecomp__trapramp massage_tree_spl_timecomp_lib;
+	       # 		      timecomp__trapramp massage_tree_timecomp_lib;
+	       # 		      timecomp__trapramp massage_tree_llg_timecomp_lib;
+	       # 		      timecomp__trapramp massage_tree_lin_timecomp_lib;
+	       # 		 fi;
+	       # 	    fi;
+	       # fi;
+	       
+	  fi; if test_spreadramp
+	       if test_unbalanced
+		    test__spreadramp unbalanced_binary_search_tree_lib;
+	       fi;
+	       
+	       if test_main
+		    if test_every_imp
+			 test__spreadramp dual_height_massage_tree_lib;
+			 test__spreadramp splay_tree_lib;
+			 test__spreadramp naive_splay_tree_lib;
+			 test__spreadramp inverted_splay_tree_lib;
+		    fi;
+		    if test_biphase
+			 test__spreadramp biphase_splay_tree_lib;
+		    fi;
+		    if test_v1
+			 test__spreadramp massage_tree_lib;
+			 if test_secondary
+			      test__spreadramp massage_tree_llg_lib;
+			      test__spreadramp massage_tree_lin_lib;
+			 fi;
+		    fi;
+		    if test_v2
+			 if test_secondary
+			      test__spreadramp massage_tree_2_lib;
+			 fi;
+			 test__spreadramp massage_tree_2_lin_lib;
+		    fi;
+		    if test_oversplay
+			 test__spreadramp oversplay_tree_lib;
+		    fi;
+		    if test_blendsplay
+			 test__spreadramp blendsplay_tree_lib;
+		    fi;
+	       fi;
+	       
+	       if test_annotated
+		    if test_v1
+			 test__spreadramp massage_tree_gen_lib;
+			 test__spreadramp massage_tree_spl_lib;
+		    fi;
+	       fi;
+	       
+	       # if test_timecomp
+	       # 	    if test_every_imp
+	       # 		 if test_v1
+	       # 		      timecomp__spreadramp massage_tree_gen_timecomp_lib;
+	       # 		      timecomp__spreadramp massage_tree_spl_timecomp_lib;
+	       # 		      timecomp__spreadramp massage_tree_timecomp_lib;
+	       # 		      timecomp__spreadramp massage_tree_llg_timecomp_lib;
+	       # 		      timecomp__spreadramp massage_tree_lin_timecomp_lib;
+	       # 		 fi;
+	       # 	    fi;
+	       # fi;
+	       
+	  fi; if test_bipass
+	       if test_unbalanced
+		    test__bipass unbalanced_binary_search_tree_lib;
+	       fi;
+	       
+	       if test_main
+		    if test_every_imp
+			 test__bipass dual_height_massage_tree_lib;
+			 test__bipass splay_tree_lib;
+			 test__bipass naive_splay_tree_lib;
+			 test__bipass inverted_splay_tree_lib;
+		    fi;
+		    if test_biphase
+			 test__bipass biphase_splay_tree_lib;
+		    fi;
+		    if test_v1
+			 test__bipass massage_tree_lib;
+			 if test_secondary
+			      test__bipass massage_tree_llg_lib;
+			      test__bipass massage_tree_lin_lib;
+			 fi;
+		    fi;
+		    if test_v2
+			 if test_secondary
+			      test__bipass massage_tree_2_lib;
+			 fi;
+			 test__bipass massage_tree_2_lin_lib;
+		    fi;
+		    if test_oversplay
+			 test__bipass oversplay_tree_lib;
+		    fi;
+		    if test_blendsplay
+			 test__bipass blendsplay_tree_lib;
+		    fi;
+	       fi;
+	       
+	       if test_annotated
+		    if test_v1
+			 test__bipass massage_tree_gen_lib;
+			 test__bipass massage_tree_spl_lib;
+		    fi;
+	       fi;
+	       
+	       if test_timecomp
+		    if test_every_imp
+			 if test_v1
+			      timecomp__bipass massage_tree_gen_timecomp_lib;
+			      timecomp__bipass massage_tree_spl_timecomp_lib;
+			      timecomp__bipass massage_tree_timecomp_lib;
+			      timecomp__bipass massage_tree_llg_timecomp_lib;
+			      timecomp__bipass massage_tree_lin_timecomp_lib;
+			 fi;
+		    fi;
+	       fi;
+	       
+	  fi; if test_sort_nonuniform
+	       
+	       if test_unbalanced
+		    test__tree_sort_nonuniform_random_numbers unbalanced_binary_search_tree_lib;
+	       fi;
+
+	       if test_main
+		    if test_every_imp
+			 test__tree_sort_nonuniform_random_numbers dual_height_massage_tree_lib;
+			 test__tree_sort_nonuniform_random_numbers splay_tree_lib;
+			 test__tree_sort_nonuniform_random_numbers naive_splay_tree_lib;
+			 test__tree_sort_nonuniform_random_numbers inverted_splay_tree_lib;
+		    fi;
+		    if test_biphase
+			 test__tree_sort_nonuniform_random_numbers biphase_splay_tree_lib;
+		    fi;
+		    if test_v1
+			 test__tree_sort_nonuniform_random_numbers massage_tree_lib;
+			 if test_secondary
+			      test__tree_sort_nonuniform_random_numbers massage_tree_llg_lib;
+			      test__tree_sort_nonuniform_random_numbers massage_tree_lin_lib;
+			 fi;
+		    fi;
+		    if test_v2
+			 if test_secondary
+			      test__tree_sort_nonuniform_random_numbers massage_tree_2_lib;
+			 fi;
+			 test__tree_sort_nonuniform_random_numbers massage_tree_2_lin_lib;
+		    fi;
+		    if test_oversplay
+			 test__tree_sort_nonuniform_random_numbers oversplay_tree_lib;
+		    fi;
+		    if test_blendsplay
+			 test__tree_sort_nonuniform_random_numbers blendsplay_tree_lib;
+		    fi;
+	       fi;
+	       
+	       if test_annotated
+		    if test_v1
+			 test__tree_sort_nonuniform_random_numbers massage_tree_gen_lib;
+			 test__tree_sort_nonuniform_random_numbers massage_tree_spl_lib;
+		    fi;
+		    if test_v2
+			 test__tree_sort_nonuniform_random_numbers massage_tree_2_gen_lib;
+			 test__tree_sort_nonuniform_random_numbers massage_tree_2_spl_lib;
+		    fi;
+	       fi;
+	       
+	       if test_timecomp
+		    if test_every_imp
+			 if test_v1
+			      timecomp__tree_sort_nonuniform_random_numbers massage_tree_gen_timecomp_lib;
+			      timecomp__tree_sort_nonuniform_random_numbers massage_tree_spl_timecomp_lib;
+			      timecomp__tree_sort_nonuniform_random_numbers massage_tree_timecomp_lib;
+			      timecomp__tree_sort_nonuniform_random_numbers massage_tree_llg_timecomp_lib;
+			      timecomp__tree_sort_nonuniform_random_numbers massage_tree_lin_timecomp_lib;
+			 fi;
+		    fi;
+	       fi;
+
+	  fi; if test_sort_uniform
+
+	       if test_unbalanced
+		    test__tree_sort_uniformly_random_numbers unbalanced_binary_search_tree_lib;
+	       fi;
+	       
+	       if test_main
+		    if test_every_imp
+			 test__tree_sort_uniformly_random_numbers dual_height_massage_tree_lib;
+			 test__tree_sort_uniformly_random_numbers splay_tree_lib;
+			 test__tree_sort_uniformly_random_numbers naive_splay_tree_lib;
+			 test__tree_sort_uniformly_random_numbers inverted_splay_tree_lib;
+		    fi;
+		    if test_biphase
+			 test__tree_sort_uniformly_random_numbers biphase_splay_tree_lib;
+		    fi;
+		    if test_v1
+			 test__tree_sort_uniformly_random_numbers massage_tree_lib;
+			 if test_secondary
+			      test__tree_sort_uniformly_random_numbers massage_tree_llg_lib;
+			      test__tree_sort_uniformly_random_numbers massage_tree_lin_lib;
+			 fi;
+		    fi;
+		    if test_v2
+			 if test_secondary
+			      test__tree_sort_uniformly_random_numbers massage_tree_2_lib;
+			 fi;
+			 test__tree_sort_uniformly_random_numbers massage_tree_2_lin_lib;
+		    fi;
+		    if test_oversplay
+			 test__tree_sort_uniformly_random_numbers oversplay_tree_lib;
+		    fi;
+		    if test_blendsplay
+			 test__tree_sort_uniformly_random_numbers blendsplay_tree_lib;
+		    fi;
+	       fi;
+	       
+	       if test_annotated
+		    if test_v1
+			 test__tree_sort_uniformly_random_numbers massage_tree_gen_lib;
+			 test__tree_sort_uniformly_random_numbers massage_tree_spl_lib;
+		    fi;
+		    if test_v2
+			 test__tree_sort_uniformly_random_numbers massage_tree_2_gen_lib;
+			 test__tree_sort_uniformly_random_numbers massage_tree_2_spl_lib;
+		    fi;
+	       fi;
+	       
+	       if test_timecomp
+		    if test_every_imp
+			 if test_v1
+			      timecomp__tree_sort_uniformly_random_numbers massage_tree_gen_timecomp_lib;
+			      timecomp__tree_sort_uniformly_random_numbers massage_tree_spl_timecomp_lib;
+			      timecomp__tree_sort_uniformly_random_numbers massage_tree_timecomp_lib;
+			      timecomp__tree_sort_uniformly_random_numbers massage_tree_llg_timecomp_lib;
+			      timecomp__tree_sort_uniformly_random_numbers massage_tree_lin_timecomp_lib;
+			 fi;
+		    fi;
+	       fi;
+	       
+	  fi; if test_sort_normal
+
+	       if test_unbalanced
+		    test__tree_sort_normal_random_numbers unbalanced_binary_search_tree_lib__float;
+	       fi;
+
+	       if test_main
+		    if test_every_imp
+			 test__tree_sort_normal_random_numbers dual_height_massage_tree_lib__float;
+			 test__tree_sort_normal_random_numbers splay_tree_lib__float;
+			 test__tree_sort_normal_random_numbers naive_splay_tree_lib__float;
+			 test__tree_sort_normal_random_numbers inverted_splay_tree_lib__float;
+		    fi;
+		    if test_biphase
+			 test__tree_sort_normal_random_numbers biphase_splay_tree_lib__float;
+		    fi;
+		    if test_v1
+			 test__tree_sort_normal_random_numbers massage_tree_lib__float;
+			 if test_secondary
+			      test__tree_sort_normal_random_numbers massage_tree_llg_lib__float;
+			      test__tree_sort_normal_random_numbers massage_tree_lin_lib__float;
+			 fi;
+		    fi;
+		    if test_v2
+			 if test_secondary
+			      test__tree_sort_normal_random_numbers massage_tree_2_lib__float;
+			 fi;
+			 test__tree_sort_normal_random_numbers massage_tree_2_lin_lib__float;
+		    fi;
+		    if test_oversplay
+			 test__tree_sort_normal_random_numbers oversplay_tree_lib__float;
+		    fi;
+		    if test_blendsplay
+			 test__tree_sort_normal_random_numbers blendsplay_tree_lib__float;
+		    fi;
+	       fi;
+	       
+	       if test_annotated
+		    if test_v1
+			 test__tree_sort_normal_random_numbers massage_tree_gen_lib__float;
+			 test__tree_sort_normal_random_numbers massage_tree_spl_lib__float;
+		    fi;
+		    if test_v2
+			 test__tree_sort_normal_random_numbers massage_tree_2_gen_lib__float;
+			 test__tree_sort_normal_random_numbers massage_tree_2_spl_lib__float;
+		    fi;
+	       fi;
+	       
+	       # if test_timecomp
+	       #      if test_every_imp
+	       # 	    timecomp__tree_sort_normal_random_numbers massage_tree_gen_timecomp_lib;
+	       # 	    timecomp__tree_sort_normal_random_numbers massage_tree_spl_timecomp_lib;
+	       # 	    timecomp__tree_sort_normal_random_numbers massage_tree_timecomp_lib;
+	       # 	    timecomp__tree_sort_normal_random_numbers massage_tree_llg_timecomp_lib;
+	       #      fi;
+	       #      timecomp__tree_sort_normal_random_numbers massage_tree_lin_timecomp_lib;
+	       # fi;
+
+	  fi; if test_sort_rounded_normal
+
+	       if test_unbalanced
+		    test__tree_sort_rounded_normal_random_numbers unbalanced_binary_search_tree_lib;
+	       fi;
+
+	       if test_main
+		    if test_every_imp
+			 test__tree_sort_rounded_normal_random_numbers dual_height_massage_tree_lib;
+			 test__tree_sort_rounded_normal_random_numbers splay_tree_lib;
+			 test__tree_sort_rounded_normal_random_numbers naive_splay_tree_lib;
+			 test__tree_sort_rounded_normal_random_numbers inverted_splay_tree_lib;
+		    fi;
+		    if test_biphase
+			 test__tree_sort_rounded_normal_random_numbers biphase_splay_tree_lib;
+		    fi;
+		    if test_v1
+			 test__tree_sort_rounded_normal_random_numbers massage_tree_lib;
+			 if test_secondary
+			      test__tree_sort_rounded_normal_random_numbers massage_tree_llg_lib;
+			      test__tree_sort_rounded_normal_random_numbers massage_tree_lin_lib;
+			 fi;
+		    fi;
+		    if test_v2
+			 if test_secondary
+			      test__tree_sort_rounded_normal_random_numbers massage_tree_2_lib;
+			 fi;
+			 test__tree_sort_rounded_normal_random_numbers massage_tree_2_lin_lib;
+		    fi;
+		    if test_oversplay
+			 test__tree_sort_rounded_normal_random_numbers oversplay_tree_lib__float;
+		    fi;
+		    if test_blendsplay
+			 test__tree_sort_rounded_normal_random_numbers blendsplay_tree_lib__float;
+		    fi;
+	       fi;
+	       
+	       if test_annotated
+		    if test_v1
+			 test__tree_sort_rounded_normal_random_numbers massage_tree_gen_lib;
+			 test__tree_sort_rounded_normal_random_numbers massage_tree_spl_lib;
+		    fi;
+		    if test_v2
+			 test__tree_sort_rounded_normal_random_numbers massage_tree_2_gen_lib;
+			 test__tree_sort_rounded_normal_random_numbers massage_tree_2_spl_lib;
+		    fi;
+	       fi;
+	       
+	       # if test_timecomp
+	       #      if test_every_imp
+	       # 	    timecomp__tree_sort_rounded_normal_random_numbers massage_tree_gen_timecomp_lib;
+	       # 	    timecomp__tree_sort_rounded_normal_random_numbers massage_tree_spl_timecomp_lib;
+	       # 	    timecomp__tree_sort_rounded_normal_random_numbers massage_tree_timecomp_lib;
+	       # 	    timecomp__tree_sort_rounded_normal_random_numbers massage_tree_llg_timecomp_lib;
+	       #      fi;
+	       #      timecomp__tree_sort_rounded_normal_random_numbers massage_tree_lin_timecomp_lib;
+	       # fi;
+	  fi;
+     fi;
+end;
+     
