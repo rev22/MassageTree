@@ -1,6 +1,6 @@
 # Custom build rules for Mythryl programs and libraries
 
-# Copyright (c) 2013 Michele Bini
+# Copyright (c) 2013 Michele Bini <michele.bini@gmail.com>
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the version 3 of the GNU General Public License
