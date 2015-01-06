@@ -1,0 +1,291 @@
+# MassageTree.pkg - A reference implementation for Massage Trees
+
+# Copyright (c) 2014 Michele Bini
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the version 3 of the GNU General Public License
+# as published by the Free Software Foundation.
+
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Requires: standard
+
+package massage_tree {
+    package float = eight_byte_float;
+
+    desc = "Massage tree 1.1.0-pre.2";
+    
+    Height = Int;
+    Size = Int;
+    Tree(X) = EMPTY | NODE((Height, Size), Tree(X), X, Tree(X));
+
+    infix my 50 (<=>); # comparison operator: (X, X) -> LESS | GREATER | EQUAL
+    
+    fun  size(EMPTY) => 0;
+	 size(NODE((_,s),_,_,_)) => s;
+    end
+    also
+    fun  height(EMPTY) => 0;
+	 height(NODE((h,_),_,_,_)) => h;
+    end
+    also
+    fun node(l,m,r) = NODE((max(height(l), height(r)) + 1, size(l) + size(r) + 1), l,m,r) where
+	 fun max(a,b) = a < b ?? b :: a;
+    end;
+    
+    my balancedness = {
+	to_float = float::from_int;
+	(/) = float::(/);
+	(*) = float::(*);
+	ceil = float::float_ceil;
+	ln = float::math::ln;
+	invlog2 = 1.0 / ln(2.0);
+	fun ceillog2(x) = ceil(ln(x) * invlog2);
+	fun height_t(s) = ceillog2(to_float(s + 1));
+	fn(h,s) = height_t(s) / to_float(h);
+    };
+    
+    fun member_gen (<=>) = member where
+	 fun  member(EMPTY, x) => FALSE;
+	      member(NODE(_,l,m,r), x) => case (x <=> m)
+		   LESS     => member(l,x);
+		   GREATER  => member(r,x);
+		   EQUAL    => TRUE;
+	      esac;
+	 end;
+    end;
+    
+    fun insert_gen (<=>) = insert where
+	 fun  insert(EMPTY, x) => node(EMPTY,x,EMPTY);
+	      insert(NODE(_,l,m,r), x) => case (x <=> m)
+		   LESS     => node(insert(l,x), m,r);
+		   GREATER  => node(l,m,insert(r,x));
+		   EQUAL    => node(l,x,r);
+	      esac;
+	 end;
+    end;
+    
+    fun  concat_gen(EMPTY, x) => x;
+	 concat_gen(x, EMPTY) => x;
+	 concat_gen(
+	       a as NODE((h_a, _), l_a, m_a, r_a),
+	       b as NODE((h_b, _), l_b, m_b, r_b))
+	 => case (int::compare(h_a, h_b))
+	      LESS  => node(concat_gen(a, l_b), m_b, r_b);
+	      _     => node(l_a, m_a, concat_gen(r_a, b));
+	 esac;     
+    end;
+    
+    fun delete_gen (<=>) = delete where
+	 fun  delete(EMPTY, x) => node(EMPTY,x,EMPTY);
+	      delete(NODE(_,l,m,r), x) => case (int::compare(x, m))
+		   LESS     => node(delete(l,x),m,r);
+		   GREATER  => node(l,m,delete(r,x));
+		   EQUAL    => concat_gen(l,r);
+	      esac;
+	 end;
+    end;
+    
+    fun add_r(m,r, (f_l, f_r)) = (f_l, (m,r) ! f_r);
+    fun add_l(m,l, (f_l, f_r)) = ((m,l) ! f_l, f_r);
+    
+    fun node_r(l, m, r) = node(l, m, r);
+    fun node_l(r, m, l) = node(l, m, r);
+    
+    fun splay (<=>) = splay where
+	 fun build node = build where
+	      fun  build(t, (v_a, t_a) ! (v_b, t_b) ! f) => node(t, v_a, build(node(t_a, v_b, t_b), f));
+		   build(t, [ (v_a, t_a) ]) => node(t, v_a, t_a);
+		   build(t, []) => t;
+	      end;
+	 end;
+
+	 fun ascend(x,l,r, (l_f, r_f)) =
+	     node(build node_l (l, l_f), x, build node_r (r, r_f));
+	 
+	 fun  descend(x, n as (_,l,m,r),f) = case (x <=> m)
+	      LESS     => descend_deep(x,l, add_r(m,r,f), n,f);
+	      GREATER  => descend_deep(x,r, add_l(m,l,f), n,f);
+	      EQUAL    => ascend(x,l,r,f);
+	 esac
+	 also	 
+	 fun  descend_deep(_,EMPTY,_,(_,l,m,r),f)  => ascend(m,l,r,f);
+	      descend_deep(x,NODE n,f,_,_)              => descend(x,n,f);
+	 end;
+
+	 fun  splay(NODE t,x) => descend(x,t, ([],[]));
+	      splay(EMPTY, x) => EMPTY;
+	 end;	 
+    end;
+    
+    fun member_spl (<=>) = member_spl where
+	 member_gen = member_gen (<=>);
+	 splay = splay (<=>);
+	 fun member_spl(t,x) = {
+	     t = splay(t,x);
+	     (t, member_gen(t,x));
+	 };
+    end;
+    
+    fun insert_spl (<=>) = insert_spl where
+	 insert_gen = insert_gen (<=>);
+	 splay = splay (<=>);
+	 fun insert_spl(t,x) = insert_gen(splay(t,x),x);
+    end;
+    
+    fun delete_spl (<=>) = delete_spl where
+	 delete_gen = delete_gen (<=>);
+	 splay = splay (<=>);
+	 fun delete_spl(t,x) = delete_gen(splay(t,x),x);
+    end;
+    
+  
+    fun pack_massage(l,r) = (pack_s node_l l, pack_s node_r r) where
+	 fun pack_s node = pack where
+	      fun  pack((m_a, t_a) ! (m_b, t_b) ! f) => (m_a, node(t_a, m_b, t_b)) ! pack(f);
+		   pack(f) => f;
+	      end;
+	 end;
+    end;
+  
+    fun  ascend_massage(t, ([],[])) => t;
+	 ascend_massage(t, ((m_a, t_a) ! f_a, [])) => ascend_massage(node(t_a, m_a, t), (f_a, []));
+	 ascend_massage(t, ([], (m_a, t_a) ! f_a)) => ascend_massage(node(t, m_a, t_a), ([], f_a));
+	 ascend_massage(t, (l as ((m_l, t_l) ! f_l), r as ((m_r, t_r) ! f_r)))
+	 => case (int::compare(size(t_l), size(t_r)))
+	      GREATER  => ascend_massage(node(t, m_r, t_r), (l, f_r));
+	      _        => ascend_massage(node(t_l, m_l, t), (f_l, r));
+	 esac;
+    end;
+  
+    fun  massage(EMPTY) => EMPTY;
+	 massage(t as NODE n)
+	 => case (float::compare(balancedness(n.1), balancedness_massage))
+	      GREATER => t;
+	      _ => descend(t, ([],[]));
+	 esac where
+	      balancedness_massage = 0.2;
+	      
+	      fun  descend(EMPTY, f) => ascend_massage(EMPTY, pack_massage(f));
+		   descend(NODE(_,l,m,r), f) => case (int::compare(height(l), height(r)))
+			LESS  => descend(r, add_l(m,l,f));
+			_     => descend(l, add_r(m,r,f));
+		   esac;
+	      end;
+	 end;
+    end;
+  
+    fun member_mas (<=>) = member_mas where
+	 member_spl = member_spl (<=>);
+	 fun member_mas(t,x) = {
+	     my (t,r) = member_spl(t,x);
+	     (massage(t), r);
+	 };
+    end;
+
+    fun insert_mas (<=>) = insert_mas where
+	 insert_spl = insert_spl (<=>);
+	 fun insert_mas(t,x) = massage(insert_spl(t,x));
+    end;
+
+    fun delete_mas (<=>) = delete_mas where
+	 delete_spl = delete_spl (<=>);
+	 fun delete_mas(t,x) = massage(delete_spl(t,x));
+    end;
+
+    fun  massage_loglog(EMPTY) => EMPTY;
+	 massage_loglog(NODE n) => descend_bal(n, ([],[])) where
+	      my balancedness_massage = 0.2;
+	      
+	      fun descend_bal(n,f) =
+		  case (float::compare(balancedness(n.1), balancedness_massage))
+		   GREATER  => ascend_massage(NODE n, pack_massage(f));
+		   _        => descend(n,f);
+	      esac
+	      also
+	      fun descend((_,l,m,r), f) = case (int::compare(height(l), height(r)))
+		   LESS  => descend_ii(r, add_l(m,l,f));
+		   _     => descend_ii(l, add_r(m,r,f));
+	      esac
+	      also
+	      fun  descend_ii(EMPTY, f)   => ascend_massage(EMPTY, pack_massage(f));
+		   descend_ii(NODE n, f)  => descend_bal(n,f);
+	      end;	 
+	 end;
+    end;
+    
+    fun member_llg (<=>) = member_mas where
+	 massage = massage_loglog;
+	 member_spl = member_spl (<=>);
+	 fun member_mas(t,x) = {
+	     my (t,r) = member_spl(t,x);
+	     (massage(t), r);
+	 };
+    end;
+
+    fun insert_llg (<=>) = insert_mas where
+	 massage = massage_loglog;
+	 insert_spl = insert_spl (<=>);
+	 fun insert_mas(t,x) = massage(insert_spl(t,x));
+    end;
+
+    fun delete_llg (<=>) = delete_mas where
+	 massage = massage_loglog;
+	 delete_spl = delete_spl (<=>);
+	 fun delete_mas(t,x) = massage(delete_spl(t,x));
+    end;
+
+    fun massage_rounds massage_k = massage where
+	 my balancedness_massage = 0.2;
+	 
+	 fun descend_bal(n,f,c) =
+	     case (float::compare(balancedness(n.1), balancedness_massage))
+	      GREATER  => ascend_massage(NODE n, pack_massage(f));
+	      _        => descend(n,f,c);
+	 esac
+	 also
+	 fun descend((_,l,m,r), f,c) = case (int::compare(height(l), height(r)))
+	      LESS  => descend_ii(r, add_l(m,l,f), c);
+	      _     => descend_ii(l, add_r(m,r,f), c);
+	 esac
+	 also
+	 fun  descend_ii(EMPTY,   f,c) => ascend_massage(EMPTY, pack_massage(f));
+	      descend_ii(NODE n,  f,c) => descend_rep(n,f,c);
+	 end
+	 also
+	 fun  descend_rep(n,f,0) => ascend_massage(NODE n, pack_massage(f));
+	      descend_rep(n,f,c) => descend_bal(n,f, c - 1);
+	 end;
+	 
+	 fun  massage(EMPTY) => EMPTY;
+	      massage(NODE n) => descend_bal(n, ([],[]), massage_k);
+	 end;
+    end;
+
+    fun member_lin (<=>) = member_mas where
+	 massage = massage_rounds 5;
+	 member_spl = member_spl (<=>);
+	 fun member_mas(t,x) = {
+	     my (t,r) = member_spl(t,x);
+	     (massage(t), r);
+	 };
+    end;
+
+    fun insert_lin (<=>) = insert_mas where
+	 massage = massage_rounds 5;
+	 insert_spl = insert_spl (<=>);
+	 fun insert_mas(t,x) = massage(insert_spl(t,x));
+    end;
+
+    fun delete_lin (<=>) = delete_mas where
+	 massage = massage_rounds 5;
+	 delete_spl = delete_spl (<=>);
+	 fun delete_mas(t,x) = massage(delete_spl(t,x));
+    end;
+};
