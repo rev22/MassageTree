@@ -1,4 +1,6 @@
-Massage Trees: Self-adjusting, self-balancing binary search trees
+Massage Trees: Self-adjusting, self-balancing binary trees
+
+Research paper (draft): http://rev22.github.io/MassageTree/paper.html
 
 Reference implementation and research paper of a novel data structure.
 
