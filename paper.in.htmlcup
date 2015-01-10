@@ -1,0 +1,369 @@
+require('html2cup').modApply ->
+    @docType "html"
+    @html xmlns:"http://www.w3.org/1999/xhtml", ->
+        @head ->
+            @meta "http-equiv":"Content-Type", content:"text/html; charset=utf-8"
+            @meta "http-equiv":"Content-Style-Type", content:"text/css"
+            @meta name:"generator", content:"pandoc"
+            @title "Massage Tree - self-adjusting, self-balancing binary trees"
+        @body ->
+            @style type:"text/css", -> @_ 
+                ''''
+                code{ white-space: pre; }
+            @script src:"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML", type:"text/javascript"
+            @p -> @em -> @_ "Michele Bini <michele.bini@gmail.com>, 2014-02-22; last draft: 2015-01-10"
+            @p -> @_ "The self-adjusting property of splay trees is combined with a self-balancing property, thereby improving the worst-case complexity of basic operations from linear to logarithmic to the size of the tree. The resulting persistent data structures can be used to efficiently and seamlessly simulate other specialized data structures."
+            @p -> @_ "Keywords: self-balancing trees, self-adjusting"
+            @div id:"TOC", ->
+                @ul ->
+                    @li ->
+                        @a href:"#introduction", -> @_ "Introduction"
+                    @li ->
+                        @a href:"#basic-theories-and-techniques", -> @_ "Basic theories and techniques"
+                        @ul ->
+                            @li ->
+                                @a href:"#functional-set-operations", -> @_ "Functional set operations"
+                            @li ->
+                                @a href:"#binary-search-trees", -> @_ "Binary search trees"
+                            @li ->
+                                @a href:"#evaluating-tree-balance", -> @_ "Evaluating tree balance"
+                    @li ->
+                        @a href:"#functional-splay-trees", -> @_ "Functional splay trees"
+                        @ul ->
+                            @li ->
+                                @a href:"#integrated-splay-tree-operations", -> @_ "Integrated splay tree operations"
+                            @li ->
+                                @a href:"#analysis-of-the-splay-operation", -> @_ "Analysis of the splay operation"
+                    @li ->
+                        @a href:"#a-monolithic-rebalancing-function", -> @_ "A monolithic rebalancing function"
+                        @ul ->
+                            @li ->
+                                @a href:"#operations-on-massage-trees", -> @_ "Operations on massage trees"
+                                @ul ->
+                                    @li ->
+                                        @a href:"#operations-on-massage-trees-1", -> @_ "Operations on massage trees"
+                    @li ->
+                        @a href:"#experimental-results", -> @_ "Experimental results"
+                    @li ->
+                        @a href:"#applications", -> @_ "Applications"
+                        @ul ->
+                                    @li ->
+                                        @S().a href:"#queues", -> @_ "Queues"
+                                    @li ->
+                                        @S().a href:"#deques", -> @_ "Deques"
+                                    @li ->
+                                        @S().a href:"#dynamic-arrays", -> @_ "Dynamic arrays"
+                                    @li ->
+                                        @S().a href:"#linked-list", -> @_ "Linked-list"
+                                    @li ->
+                                        @S().a href:"#ropes", -> @_ "Ropes"
+                    @li ->
+                        @S().a href:"#conclusions", -> @_ "Conclusions"
+                     @li ->
+                                @_().a href:"#appendix", -> @_ "Appendix"
+                                @S().ul ->
+                                    @li ->
+                                        @S().a href:"#terminology", -> @_ "Terminology"
+            @h2 id:"introduction", ->
+                @S().a href:"#introduction", -> @_ "Introduction"
+            @p -> @_ "Among the data structures available to programmers, some of them, like lists, stacks or queues are specialized for sequential, or local-access operations. Others, like balanced trees, are specialized for random-access operations."
+            @_ 
+                ''''
+                
+                The goal of this paper is addressing the duality between these data-structures, by providing algorithms for a generic tree structure reconciling constant time bounds for sequential and local operations, with logarithmic time bounds for random-access operations. For brevity in this paper ``focal'' will be used to indicate either sequential or local type of accesses and combinations of them.
+                
+            @table ->
+                    @tr ->
+                        @td ->
+                        @th colspan:"2", -> @_ " \nrandom insert/replace/delete\n"
+                        @.th -> @_ " \nfocal insert/replace/delete\n"
+                    @tr ->
+                        @td ->
+                        @th -> @_ "\namortized\n"
+                        @th -> @_ "\nworst-case\n"
+                        @th -> @_ "\namortized\n"
+                    @tr ->
+                        @td -> @_ "\nRed-black tree\n"
+                        @td -> @_ "\nO(log(n))\n"
+                        @td -> @_ "\nO(log(n))\n"
+                        @td -> @_ "\nO(log(n))\n"
+                    @tr ->
+                        @td -> @_ "\nSplay tree\n"
+                        @td -> @_ "\nO(log(n))\n"
+                        @td -> @_ "\nO(n)\n"
+                        @td ->
+                            @strong -> @_ "O(1)"
+                    @tr ->
+                        @td -> @_ "\nMassage tree\n"
+                        @td -> @_ "\nO(log(n))\n"
+                        @td ->
+                            @strong -> @_ "O(log(n))"
+                        @td -> @_ "\nO(1)\n"
+            @p -> @_ "This paper will first survey cover basic techniques and theories for splay trees, then describe a rebalancing operation with amortized constant time complexity that can be employed to lower the worst-case time bounds of all basic operations."
+            @p -> @_ "Finally, a fully constant-time rebalancing operation is embedded into the splay operation."
+            @p -> @_ "Each step will supported by theoretically and/or experimentally."
+            @p -> @_ "For ease of analisys of the time bounds, an eager order of execution will be assumed.  The pseudocode in this paper is in a fictional, indentation-sensitive language inspired by Mythyrl."
+            @h2 id:"basic-theories-and-techniques", ->
+                @a href:"#basic-theories-and-techniques", -> @_ "Basic theories and techniques"
+            @h1 id:"functional-set-operations", ->
+                @a href:"#functional-set-operations", -> @_ "Functional set operations"
+            @p ->
+                @span class:"math", -> @_ "\\[\n\\newcommand{\\lincell}{\\cellcolor{gray2}\\text{linear}}\n\\newcommand{\\logcell}{\\cellcolor{gray1}\\text{logarithmic}}\n\\newcommand{\\concell}{\\text{constant}}\n\\newcommand{\\insert}{\\mathit{\\textbf{insert}}}\n\\newcommand{\\member}{\\textbf{member}}\n\\newcommand{\\concat}{\\textbf{concat}}\n\\newcommand{\\delete}{\\textbf{delete}}\n\\newcommand{\\queuepush}{\\mathit{\\textbf{push}}}\n\\newcommand{\\queuepop}{\\textbf{pop}}\n\\newcommand{\\seqfirst}{\\textbf{first}}\n\\newcommand{\\seqlast}{\\textbf{last}}\n\\newcommand{\\seqjoin}{\\textbf{join}}\n\\newcommand{\\seqsplit}{\\textbf{split}}\n\\newcommand{\\height}{\\textbf{h}}\n\\newcommand{\\size}{\\textbf{s}}\n\\newcommand{\\Tree}{\\mathsf{Tree}}\n\\newcommand{\\Measures}{\\mathsf{Measures}}\n\\newcommand{\\Height}{\\mathsf{Height}}\n\\newcommand{\\node}{\\textbf{node}}\n\\newcommand{\\splay}{\\textbf{splay}}\n\\newcommand{\\massage}{\\textbf{massage}}\n\\newcommand{\\descend}{\\textbf{descend}}\n\\newcommand{\\compress}{\\textbf{pack}}\n\\newcommand{\\add}{\\textbf{add}}\n\\newcommand{\\build}{\\textbf{build}}\n\\newcommand{\\ascend}{\\textbf{ascend}}\n\\newcommand{\\loopy}{\\textbf{loop}}\n\\newcommand{\\true}{\\boldsymbol{\\top}}\n\\newcommand{\\false}{\\boldsymbol{\\bot}}\n\\newcommand{\\indent}{\\;\\;\\;\\;}\n\\newcommand{\\gentree}{\\textbf{G}}\n\\newcommand{\\baltree}{\\textbf{B}}\n\\newcommand{\\splayop}{\\textbf{Spl}}\n\\newcommand{\\genop}{\\textbf{Gen}}\n\\newcommand{\\massageop}{\\textbf{Mas}}\n\\newcommand{\\OrderedSet}{\\textbf{X}}\n\\newcommand{\\emptytup}{\\varnothing}\n\\newcommand{\\balancedness}{\\textbf{b}}\n\\newcommand{\\codedescription}[1]{\\mathit{#1}}\n\\]"
+            @p ->
+                @_ "In the context of this paper, "
+                @span class:"math", -> @_ "\\(\\OrderedSet\\)"
+                @_ " is a totally ordered set, while "
+                @span class:"math", -> @_ "\\(\\member,\\insert,\\delete\\)"
+                @_ " are functions whose type can be described by the set "
+                @span class:"math", -> @_ "\\(\\left\\{ (t_{1},x)\\to t_{2}|x\\in\\OrderedSet\\land t_{x}\\in\\mathbf{T}\\right\\} \\)"
+                @_ ", where "
+                @span class:"math", -> @_ "\\(\\mathbf{T}\\)"
+                @_ " is the data type of a tree set implementation."
+            @h2 id:"binary-search-trees", ->
+                @S().a href:"#binary-search-trees", -> @_ "Binary search trees"
+            @p ->
+                @_ "It is straightforward to define simple "
+                @span class:"math", -> @_ "\\(\\member\\)"
+                @_ " and "
+                @span class:"math", -> @_ "\\(\\insert\\)"
+                @_ " operations on a generic binary search tree:"
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\gentree=\\left\\{ \\emptytup_{\\gentree},\\left\\langle l,x,r\\right\\rangle _{\\gentree}\\mid l,r\\in\\gentree\\land x\\in\\OrderedSet\\right\\} \\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\member(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\false\\\\\n &amp; \\member(\\left\\langle l,m,r\\right\\rangle _{\\gentree},x) &amp;  &amp; \\to\n\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m &amp;  &amp; \\Rightarrow\\member(l,x)\\\\\n &amp; \\indent x&gt;m &amp;  &amp; \\Rightarrow\\member(r,x)\\\\\n &amp; \\indent x=m &amp;  &amp; \\Rightarrow\\true\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\insert(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},x,\\emptytup_{\\gentree}\\right\\rangle _{\\gentree}\\\\\n &amp; \\insert(\\left\\langle l,m,r\\right\\rangle _{\\gentree},x) &amp;  &amp; \\to\n\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m &amp;  &amp; \\Rightarrow\\left\\langle \\insert(l,x),m,r\\right\\rangle _{\\gentree}\\\\\n &amp; \\indent x&gt;m &amp;  &amp; \\Rightarrow\\left\\langle l,m,\\insert(r,x)\\right\\rangle _{\\gentree}\\\\\n &amp; \\indent x=m &amp;  &amp; \\Rightarrow\\left\\langle l,x,r\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\end{align}\n\\]"
+            @p -> @_ "A delete operation is necessarily more complex than insert on binary search trees, since deletions can also occur in a node with branches. Implementations of this operation for generic binary search trees are omitted for brevity and not used by other code of this paper."
+            @h2 id:"evaluating-tree-balance", ->
+                @S().a href:"#evaluating-tree-balance", -> @_ "Evaluating tree balance"
+            @p -> @_ "Basic operations on binary trees have worst-case time bounds proportional to the height of the tree, defined as the distance between the root node and the deepest node of the tree."
+            @p ->
+                @_().em -> @_ "Lemma:"
+                @_ " A perfectly balanced binary tree of height "
+                @span class:"math", -> @_ "\\(h\\)"
+                @_ " has size "
+                @span class:"math", -> @_ "\\(2^{h}-1\\)"
+                @_ "."
+            @p ->
+                @_().em -> @_ "Proof:"
+                @_ " Let "
+                @span class:"math", -> @_ "\\(\\size_{\\text{t}}(h)\\)"
+                @_ " be the size of a perfect binary tree of height "
+                @span class:"math", -> @_ "\\(h\\)"
+                @_ "."
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{eqnarray}\n\\size_{\\text{t}}(1) &amp; = &amp; 1\\\\\n\\size_{\\text{t}}(n) &amp; = &amp; \\size_{\\text{t}}(n-1)+2^{n-1}\\\\\n\\size_{\\text{t}}(n) &amp; = &amp; \\sum_{x=1}^{n}2^{n-1}=1\\frac{1-2^{n}}{1-2}=2^{n}-1\n\\end{eqnarray}\n\\]"
+            @p ->
+                @_().em -> @_ "Lemma:"
+                @_ " The height of a perfectly balanced binary tree of size s is "
+                @span class:"math", -> @_ "\\(\\height_{\\text{t}}(s)=\\log_{2}(s+1)\\)"
+                @_ " for "
+                @span class:"math", -> @_ "\\((s+1)\\in\\left\\{ x^{2}\\mid x\\in\\mathbb{N}\\right\\} \\)"
+                @_ 
+                    ''''
+                    . \end{lem} For arbitrary sizes, rounding up the result is necessary:
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\height_{\\text{t}}(s)=\\left\\lceil \\log_{2}(s+1)\\right\\rceil \\in\\mathbb{N}\n\\end{equation}\n\\]"
+            @p ->
+                @_ "The balancedness "
+                @span class:"math", -> @_ "\\(\\balancedness(t)\\)"
+                @_ " of a non-empty tree "
+                @span class:"math", -> @_ "\\(t\\)"
+                @_ " can be defined as the ratio between the height for a balanced binary tree of the same size and the measured height of the tree. "
+                @Z().span class:"math", -> @_ "\\[\n\\begin{align}\n\\balancedness(t) &amp; =\\frac{\\height_{\\text{t}}(\\size(t))}{\\height(t)}\\in\\{x\\mid x\\in\\mathbb{R}\\land0&lt;x\\le1\\}\n\\end{align}\n\\]"
+            @p -> @_ "By annotating each node with the size and height of the corresponding subtree, it is possible to calculate the balancedness of trees in constant time. A smart constructor (2.18) can be defined to maintain the size and height annotations of the nodes."
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\mathbf{\\baltree}=\\left\\{ \\emptytup_{\\baltree},\\left\\langle \\left\\langle h,s\\right\\rangle ,l,x,r\\right\\rangle _{\\baltree}\\mid h,s\\in\\mathbb{N}\\land l,r\\in\\mathbf{\\baltree}\\land x\\in\\OrderedSet\\right\\} \\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\size(\\emptytup_{\\baltree}) &amp;  &amp; \\to0\\\\\n &amp; \\size\\left\\langle \\left\\langle \\_,s\\right\\rangle ,\\_,\\_,\\_\\right\\rangle _{\\baltree} &amp;  &amp; \\to s\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\height(\\emptytup_{\\baltree}) &amp;  &amp; \\to0\\\\\n &amp; \\height\\left\\langle \\left\\langle h,\\_\\right\\rangle ,\\_,\\_,\\_\\right\\rangle _{\\baltree} &amp;  &amp; \\to h\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\left\\langle l,m,r\\right\\rangle _{\\baltree}\\to\\left\\langle \\left\\langle \\height(l)\\oplus\\height(r)+1,\\size(l)+\\size(r)+1\\right\\rangle ,l,m,r\\right\\rangle _{\\baltree}\\end{aligned}\n\\end{align}\n\\]"
+            @p ->
+                @_ "In this definition, the operator "
+                @span class:"math", -> @_ "\\(\\oplus\\)"
+                @_ " returns the maximum of the two operands."
+            @h2 id:"functional-splay-trees", ->
+                @S().a href:"#functional-splay-trees", -> @_ "Functional splay trees"
+            @p -> @_ "Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties {[}SELFADJ{]}:"
+            @ul ->
+                @li -> @_ "bringing to the top the target node"
+                @li -> @_ "reduce the height of the tree along the path to the target node"
+            @p -> @_ "The novel algorithm presented here subdivides the splay operation into a descending (2.16) phase, which accumulates lists of trees on either side of the path to the target node, and an ascending (2.18) phase, during which the lists of trees are assembled into a pair of trees of reduced height and placed as subtreres on either side of the target node."
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\splay(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\emptytup_{\\gentree}\\\\\n &amp; \\splay(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(m,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend(m,l,r,\\left\\langle l_{f,},r_{f}\\right\\rangle )\\to\\\\\n &amp; \\indent\\left\\langle \\build(\\node_{l},l,l_{f}),m,\\build(\\node_{r},r,r_{f})\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\add_{r}(m,r,\\left\\langle f_{l},f_{r}\\right\\rangle )\\to\\left\\langle f_{l},\\left[\\left\\langle m,r\\right\\rangle ,f_{r}\\dots\\right]\\right\\rangle \\\\\n &amp; \\add_{l}(m,l,\\left\\langle f_{l},f_{r}\\right\\rangle )\\to\\left\\langle \\left[\\left\\langle m,l\\right\\rangle ,f_{l}\\dots\\right],f_{r}\\right\\rangle \n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\node_{r}(l,m,r)\\to\\left\\langle l,m,r\\right\\rangle _{\\gentree}\\\\\n &amp; \\node_{l}(r,m,l)\\to\\left\\langle l,m,r\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\build(n,t,\\left[\\left\\langle v_{a},t_{a}\\right\\rangle ,\\left\\langle v_{b},t_{b}\\right\\rangle ,f\\dots\\right])\\to\\build(n,n(t,v_{a},n(t_{a},v_{b},t_{b}),f))\\\\\n &amp; \\build(n,t,\\left[\\left\\langle v_{a},t_{a}\\right\\rangle \\right])\\to n(t,v_{a},t_{a})\\\\\n &amp; \\build(n,t,\\left[\\right])\\to t\n\\end{aligned}\n\\end{align}\n\\]"
+            @p -> @_ "This splay variant has been shown experimentally to be more performant than a top-down functional splaying algorithm, and has the additional advantages of a concise implementation and simpler analysis."
+            @p -> @_ "The splay operation is typically performed before other basic operations to bring the target node to the top, and to optimize subsequent operations in the same locality of reference:"
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(t,x)\\to(\\splay(t,x),\\member_{\\genop}(\\splay(t,x),x))\\\\\n &amp; \\indent t\\leftarrowtail\\splay(t,x)\\\\\n &amp; \\indent\\left\\langle t,\\member_{\\genop}(t,x)\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\splayop}(t,x)\\to\\insert_{\\genop}(\\splay(t,x),x)\\\\\n &amp; \\delete_{\\splayop}(t,x)\\to\\delete_{\\text{\\ensuremath{\\genop}}}(\\splay(t,x),x)\n\\end{aligned}\n\\end{align}\n\\]"
+            @p ->
+                @_ "It is equivalently possible to perform the splay operation  the corresponding function for generic binary search tree: "
+                @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{cases}\n &amp; f_{1}(t,x)=\\splay(f_{\\genop}(t,x),x)\\\\\n &amp; f_{2}(t,x)=f_{\\genop}(\\splay(t,x),x)\n\\end{cases}\n\\end{equation}\n\\]"
+            @h2 id:"integrated-splay-tree-operations", ->
+                @S().a href:"#integrated-splay-tree-operations", -> @_ "Integrated splay tree operations"
+            @p -> @_ "For optimal performance of implementations of splay trees, it is adviced to embed the splay operation into the basic binary search tree operation."
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},\\false\\right\\rangle \\\\\n &amp; \\member_{\\splayop}(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(\\true,m,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(\\false,m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend(v,x,l,r,\\left\\langle l_{f,},r_{f}\\right\\rangle )\\to\\\\\n &amp; \\indent\\left\\langle \\left\\langle \\build(\\node_{l},l,l_{f}),x,\\build(\\node_{r},r,r_{f})\\right\\rangle _{\\gentree},v\\right\\rangle \n\\end{aligned}\n\\end{align}\n\\]"
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\insert_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},x,\\emptytup_{\\gentree}\\right\\rangle _{\\gentree}\\\\\n &amp; \\insert_{\\splayop}(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f))\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f))\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(x,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(x,\\emptytup_{\\gentree},f) &amp;  &amp; \\to\\ascend(x,\\emptytup_{\\gentree},\\emptytup_{\\gentree},f)\\\\\n &amp; \\descend^{\\prime}(x,t,f) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\end{align}\n\\]"
+            @p -> @_ "In the original paper for splay trees {[}selfadj{]}, basic set operations are constructed by first embedding splay the operation into each access/join/split operation, then defining insert and delete in terms of split and join. While conceptually simple, this has the drawback, for the delete operation, that two distinct splay operations would be performed."
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\delete_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\emptytup\\\\\n &amp; \\delete_{\\splayop}(t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend_{\\seqjoin}(t,\\emptytup_{\\gentree},f)\\to\\ascend^{\\prime}(t,f)\\\\\n &amp; \\descend_{\\seqjoin}(\\emptytup_{\\gentree},t,f)\\to\\ascend^{\\prime}(t,f)\\\\\n &amp; \\descend_{\\seqjoin}(\\left\\langle l_{a},m_{a},r_{a}\\right\\rangle _{\\gentree},\\left\\langle \\emptytup_{\\gentree},m_{b},r_{b}\\right\\rangle _{\\gentree},f)\\to\\\\\n &amp; \\indent\\ascend(m_{b},r_{a},r_{b},\\add_{l}(m_{a},l_{a},f))\\\\\n &amp; \\descend_{\\seqjoin}(\\left\\langle l_{a},m_{a},\\emptytup_{\\gentree}\\right\\rangle _{\\gentree},\\left\\langle l_{b},m_{b},r_{b}\\right\\rangle _{\\gentree},f)\\to\\\\\n &amp; \\indent\\ascend(m_{a},l_{a},l_{b},\\add_{r}(m_{b},r_{b},f))\n\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\descend_{\\seqjoin}(\\left\\langle l_{a},m_{a},r_{a}\\right\\rangle _{\\gentree},\\left\\langle l_{b},m_{b},r_{b}\\right\\rangle _{\\gentree},f)\\to\\\\\n &amp; \\indent\\descend_{\\seqjoin}(r_{a},l_{b},\\add_{l}(m_{a},l_{a},\\add_{r}(m_{b},r_{b},f)))\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\descend_{\\seqjoin}(l,r,t,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend^{\\prime}(t,\\left\\langle \\left[\\right],f\\right\\rangle ) &amp;  &amp; \\to\\build(\\node_{r},t,f)\\\\\n &amp; \\ascend^{\\prime}(t,\\left\\langle f,\\left[\\right]\\right\\rangle ) &amp;  &amp; \\to\\build(\\node_{l},t,f)\n\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\ascend^{\\prime}(t,\\left\\langle \\left[\\left\\langle m_{l},l\\right\\rangle ,f_{l}\\ldots\\right],f_{r}\\right\\rangle )\\to\\ascend(m_{l},l,t,\\left\\langle f_{l},f_{r}\\right\\rangle )\\end{aligned}\n\\end{align}\n\\]"
+            @h2 id:"analysis-of-the-splay-operation", ->
+                @S().a href:"#analysis-of-the-splay-operation", -> @_ "Analysis of the splay operation"
+            @p ->
+                @_().em -> @_ "Lemma:"
+                @_ " The maximum height increase of a tree after a suitably designed splay operation is constant."
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\forall x\\in\\gentree\\colon(\\height(\\splay(x))-\\height(x))\\oplus0=O(1)\n\\]"
+            @p ->
+                @_().em -> @_ "Proof:"
+                @_ " Splaying the empty tree results in an empty tree, with no height change."
+            @p -> @_ "For non-empty trees, we analize the behaviour of the previously provided splaying algorithm. In this implementation the splaying operation can be subdivided into a descending phase, and an assembling phase."
+            @p -> @_ "The descending phase starts with the tree to splay and two lists of trees initially empty, each representing one half of a finger structure. During each step of the descending phase, if the node to bring to the top is not the one being visited, the subtree more distant to the target node is added to the the corresponding list in the finger structure. When the node to bring to the top is visited, a new tree is assembled, by first assembling each of the lists of trees in each side into a tree, and then adding the resulting trees as subtrees of the top node. Therefore, the resulting tree has an height of one plus the maximum height of the subtrees assembled from the lists in the finger structure. Thus proving that the height of the assembled subtree can at most increase by a constant compared to the original tree, is equivalent to proving this lemma."
+            @p ->
+                @_ "Let "
+                @span class:"math", -> @_ "\\(m\\in\\mathbb{N}\\)"
+                @_ " be the height of the tree before the splay operation, and "
+                @span class:"math", -> @_ "\\(n\\in\\mathbb{N}\\)"
+                @_ " the number of descend steps during the splay operation. The maximum possible heights of subtrees added to any of the lists during descend steps can then be described by the sequence "
+                @span class:"math", -> @_ "\\(\\left\\langle m-1,m-2,\\ldots,m-n\\right\\rangle \\)"
+                @_ ", of which the heights of subtrees added to one of the two lists are a subsequence, with the form "
+                @span class:"math", -> @_ "\\(\\left\\langle m-n_{1},m-n_{2},\\ldots,m-n_{s}\\right\\rangle \\)"
+                @_ ", where "
+                @span class:"math", -> @_ "\\(n_{x}+1\\le n{}_{x+1}\\)"
+                @_ " and "
+                @span class:"math", -> @_ "\\(s\\)"
+                @_ " is the size of the subsequence. It may be noted that "
+                @Z().span class:"math", -> @_ "\\(n_{x}\\ge x\\)"
+            @p -> @_ "During the assembling phase, the subtrees are assembled back in reverse order, starting from the last node, also the one with the minimum of the maximum possible heights of the subtrees."
+            @p ->
+                @_ "According to the build algorithm defined in (2.21) the maximum height "
+                @span class:"math", -> @_ "\\(\\height_{m}\\)"
+                @_ " of a tree assembled from such a subsequence is defined recursively by:"
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{eqnarray*}\n &amp;  &amp; \\height_{m}(a,b,c,d\\ldots)=\\height_{m}(a\\boxplus(b\\boxplus c),d...)\\\\\n &amp;  &amp; \\height_{m}(a,b)=a\\boxplus b\\\\\n &amp;  &amp; \\height_{m}(a)=a\n \\end{eqnarray*}\n\\]"
+            @p ->
+                @_ "with "
+                @span class:"math", -> @_ "\\(a\\boxplus b=(a\\oplus b)+1\\)"
+                @_ " and "
+                @span class:"math", -> @_ "\\(a\\oplus b=\\max(a,b)\\)"
+                @_ "."
+            @p -> @_ "It is possible to distribute additions of positive values, over the maximum operator:"
+            @p ->
+                @_().span class:"math", -> @_ "\\((a\\oplus b)+n=(a+n)\\oplus(b+n)\\)"
+                @_ " for "
+                @Z().span class:"math", -> @_ "\\(n\\in\\mathbb{N}\\)"
+            @p ->
+                @_ "By recursively applying the "
+                @span class:"math", -> @_ "\\(n\\in\\mathbb{N}\\)"
+                @_ " function and distributing additions, if s is odd, one obtains:"
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\height_{m}(x_{s},\\ldots,x_{2},x_{1})=(x_{s}+\\frac{s-1}{2})\\oplus\\ldots\\oplus(x_{4}+3)\\oplus(x_{3}+3)\\oplus(x_{2}+2)\\oplus(x_{1}+2)\n\\]"
+            @p ->
+                @_ "Substituting "
+                @span class:"math", -> @_ "\\(x_{y}\\to m-n_{y}\\)"
+                @_ " "
+                @Z().span class:"math", -> @_ "\\[\n\\begin{eqnarray*}\n\\text{} &amp;  &amp; \\height_{m}(x_{s},\\ldots,x_{2},x_{1})=\\\\\n &amp;  &amp; =(m-n_{s}+\\frac{s-1}{2}\\oplus\\ldots\\oplus(m-n_{4}+3)\\oplus(m-n_{3}+3)\\oplus(m-n_{2}+2)\\oplus(m-n_{1}+2)\n\\end{eqnarray*}\n\\]"
+            @p ->
+                @_ "Given that "
+                @span class:"math", -> @_ "\\(n_{x}\\ge x\\)"
+                @_ ", the maximum possible of these terms is the last one "
+                @span class:"math", -> @_ "\\((m-n_{1}+2)\\)"
+                @_ ". By assuming the minimum value for "
+                @span class:"math", -> @_ "\\(n_{1}\\)"
+                @_ ", one obtains that the maximum possible height of the assembled subtree is "
+                @span class:"math", -> @_ "\\(m+1\\)"
+                @_ "."
+            @p ->
+                @_ "If s is even: "
+                @Z().span class:"math", -> @_ "\\[\n\\begin{eqnarray*}\n\\text{} &amp;  &amp; \\height_{m}(x_{s},\\ldots,x_{2},x_{1})=(x_{s}+\\frac{s}{2})\\oplus\\ldots\\oplus(x_{3}+3)\\oplus(x_{2}+3)\\oplus(x_{1}+1)\n\\end{eqnarray*}\n\\]"
+            @p ->
+                @_ "In this case the term with the maximum possible value is "
+                @span class:"math", -> @_ "\\((x_{2}+3)\\)"
+                @_ ". By applying the same steps as above, one similarly obtains that the maximum possible height for the assembled subtree is "
+                @span class:"math", -> @_ "\\(m+1\\)"
+                @_ "."
+            @p -> @_ "The maximum possible height increase of a tree after the splay operation defined in (2.19) is 2."
+            @p ->
+                @_().em -> @_ "Lemma:"
+                @_ " It is possible to design basic operations on splay trees whose maximum height increase is constant. Basic operations on splay trees considered in this lemma are lookup, insert and delete."
+            @p ->
+                @_().em -> @_ "Proof:"
+                @_ " The maximum height increase after a suitably designed splay operation is constant."
+            @p -> @_ "The height increase after a basic binary tree lookup is zero."
+            @p -> @_ "The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth."
+            @p -> @_ "Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant."
+            @h2 id:"a-monolithic-rebalancing-function", ->
+                @S().a href:"#a-monolithic-rebalancing-function", -> @_ "A monolithic rebalancing function"
+            @p ->
+                @_ "The "
+                @span class:"math", -> @_ "\\(\\massage\\)"
+                @_ " function described here requires that tree nodes are annotated with balance information. When the balancedness of the tree falls below a defined threshold, "
+                @span class:"math", -> @_ "\\(\\balancedness_{\\massage}\\)"
+                @_ ", the massage function descends the tree along the deepest path and reassembles it to reduces its height by a constant factor. This height reduction is analogous to the "
+                @span class:"math", -> @_ "\\(\\splay\\)"
+                @_ " operation and is the main rebalancing operation of massage trees."
+            @p ->
+                @_ "The full massage operation is "
+                @span class:"math", -> @_ "\\(O(\\log n)\\)"
+                @_ ", but when "
+                @span class:"math", -> @_ "\\(\\balancedness_{\\massage}\\)"
+                @_ " is sufficiently small it occurs every "
+                @span class:"math", -> @_ "\\((rk)^{-1}\\log n\\)"
+                @_ " operations, where "
+                @span class:"math", -> @_ "\\(n\\)"
+                @_ " is the size of the tree, "
+                @span class:"math", -> @_ "\\(r\\)"
+                @_ " is the height reduction constant and "
+                @span class:"math", -> @_ "\\(k\\)"
+                @_ " is the maximum height increase after each operation. The amortized time complexity of the massage operation is then "
+                @span class:"math", -> @_ "\\(O(rk\\log n/\\log n)=O(1)\\)"
+                @_ ". "
+                @Z().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\massage(\\emptytup_{\\baltree})\\to\\emptytup_{\\baltree}\\\\\n &amp; \\massage(t)\\to\\\\\n &amp; \\indent\\balancedness(t)&lt;\\balancedness_{\\massage}\\Rightarrow\\massage_{a}(t)\\\\\n &amp; \\indent\\balancedness(t)\\ge\\balancedness_{\\massage}\\Rightarrow t\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{a}(\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\nc\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\node(l,m,\\massage_{b}(r))\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\node(\\massage_{b}(l),m,r)\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{b}(t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\massage_{r}(t, &amp; \\left\\langle l_{l},m_{r},r_{r}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle \\left\\langle l,m,l_{r}\\right\\rangle _{\\baltree},m_{r},r_{r}\\right\\rangle _{\\baltree})\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\massage_{l}(t, &amp; \\left\\langle l_{l},m_{l},r_{l}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle l_{l},m_{l},\\left\\langle r_{l},m,r\\right\\rangle _{\\baltree}\\right\\rangle _{\\baltree})\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{l}(t\\equiv\\left\\langle \\emptytup_{\\baltree},m,r\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{l}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(l));\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{r}(t\\equiv\\left\\langle l,m,\\emptytup_{\\baltree}\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{r}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(r));\n\\end{aligned}\n\\end{align}\n\\]"
+            @h2 id:"operations-on-massage-trees", ->
+                @S().a href:"#operations-on-massage-trees", -> @_ "Operations on massage trees"
+            @p ->
+                @_ "As with "
+                @span class:"math", -> @_ "\\(\\splay\\)"
+                @_ ", "
+                @span class:"math", -> @_ "\\(\\massage\\)"
+                @_ " is combined with each of the defined operations on splay trees: "
+                @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{aligned} &amp; \\member_{\\massageop}(t,x)\\to\\\\\n &amp; \\indent\\left\\langle t,r\\right\\rangle \\leftarrowtail\\member_{\\splayop}(t,x)\\\\\n &amp; \\indent\\left\\langle \\massage(t),r\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\massageop}(t,x)\\to\\massage(\\insert_{\\splayop}(t,x))\\\\\n &amp; \\delete_{\\massageop}(t,x)\\to\\massage(\\delete_{\\text{\\ensuremath{\\splayop}}}(t,x))\n\\end{aligned}\n\\end{equation}\n\\]"
+            @p ->
+                @_ "The massage operation may equivalently be performed  or  the corresponding function for splay trees: "
+                @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{cases}\n &amp; f_{1}(t,x)=\\massage(f_{\\splayop}(t,x))\\\\\n &amp; f_{2}(t,x)=f_{\\splayop}(\\massage(t),x)\n\\end{cases}\n\\end{equation}\n\\]"
+            @h3 id:"operations-on-massage-trees-1", ->
+                @S().a href:"#operations-on-massage-trees-1", -> @_ "Operations on massage trees"
+            @p -> @_ "The freedom in the order execution of the splay, massage operations, allows us to embed the rebalancing operation into the splay operation."
+            @h2 id:"experimental-results", ->
+                @S().a href:"#experimental-results", -> @_ "Experimental results"
+            @h2 id:"applications", ->
+                @S().a href:"#applications", -> @_ "Applications"
+            @h3 id:"queues", ->
+                @S().a href:"#queues", -> @_ "Queues"
+            @p ->
+                @_ "Queue operations can be defined efficiently on massage trees: "
+                @Z().span class:"math", -> @_ "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; \\splay_{\\seqfirst}(t)=\\splay(t,\\seqfirst(t))\\\\\n &amp; f_{s}(t,x)=\\massage(f_{s,\\genop}(\\splay_{\\seqfirst}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
+            @h3 id:"deques", ->
+                @S().a href:"#deques", -> @_ "Deques"
+            @p -> @_ "Similarly, deque operations can be defined on massage trees:"
+            @p ->
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; s\\in\\left\\{ \\seqlast,\\seqfirst\\right\\} \\\\\n &amp; \\splay_{s}=(t)\\mapsto\\splay(t,s(t))\\\\\n &amp; \\splay_{\\seqfirst,\\seqlast}=\\splay_{\\seqfirst}\\cdot\\splay_{\\seqlast}\\\\\n &amp; f_{s}(t,x)\\to\\massage(f_{s,\\genop}(\\splay_{\\seqfirst}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
+            @p ->
+                @_ "The "
+                @span class:"math", -> @_ "\\(\\splay_{\\seqfirst,\\seqlast}\\)"
+                @_ " operation splays both the first and the last node of the tree. This is necessary to make subsequent accesses to any of the ends of the deque constant-time."
+            @h3 id:"dynamic-arrays", ->
+                @S().a href:"#dynamic-arrays", -> @_ "Dynamic arrays"
+            @p -> @_ "Massage trees can be used to implement dynamic arrays efficently."
+            @p -> @_ "The split operation is implemented as a variant of the splay operation."
+            @h3 id:"linked-list", ->
+                @S().a href:"#linked-list", -> @_ "Linked-list"
+            @p -> @_ "Massage trees support linked-list operations."
+            @h3 id:"ropes", ->
+                @S().a href:"#ropes", -> @_ "Ropes"
+            @p -> @_ "Massage trees make it possible to implement a functional alternative to gap buffers."
+            @h2 id:"conclusions", ->
+                @S().a href:"#conclusions", -> @_ "Conclusions"
+            @p -> @_ "Massage Trees - Extend the applications of self-adjusting trees to areas initially covered only by balanced trees - Extend the applications of balanced trees to areas so far only covered by ad-hoc structures, like queues, lists or stacks."
+            @p -> @_ "Data-structure implemented by massage trees can adapts interactively to different usage patterns."
+            @h2 id:"appendix", ->
+                @S().a href:"#appendix", -> @_ "Appendix"
+            @h3 id:"terminology", ->
+                @S().a href:"#terminology", -> @_ "Terminology"
+            @ul ->
+                @li ->
+                    @_().em -> @_ "Binary search tree"
+                    @_ " - an ordered binary tree, without duplicate nodes"
