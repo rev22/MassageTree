@@ -4,15 +4,25 @@ require('html2cup').modApply ->
         @head ->
             @meta "http-equiv":"Content-Type", content:"text/html; charset=utf-8"
             @meta "http-equiv":"Content-Style-Type", content:"text/css"
+            @meta name:"viewport", content:"width=device-width, initial-scale=1"
             @meta name:"generator", content:"pandoc"
             @title "Massage Tree - self-adjusting, self-balancing binary trees"
-        @body ->
+            @link rel:"stylesheet", href:"http://yui.yahooapis.com/pure/0.5.0/pure-min.css"
             @style type:"text/css", -> @_ 
                 ''''
-                code{ white-space: pre; }
+                code { white-space: pre; }
+                body, html { background: white; }
+                h1, h2, h3, h4, h5, a { color: black; text-decoration: none; }
+                h1, h2, h3, h4, h5, p { padding: 0.5em; margin: 0.5em; }
+                table.pure-table { padding: 2.0em; margin: 2.0em; }
+                ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
+                .math { background: #ffc; }
             @script src:"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML", type:"text/javascript"
+        @body ->
+         @div class:"pure-g", ->
+          @div class:"pure-u-1", ->
             @p -> @em -> @_ "Michele Bini <michele.bini@gmail.com>, 2014-02-22; last draft: 2015-01-10"
-            @p -> @_ "The self-adjusting property of splay trees is combined with a self-balancing property, thereby improving the worst-case complexity of basic operations from linear to logarithmic to the size of the tree. The resulting persistent data structures can be used to efficiently and seamlessly simulate other specialized data structures."
+            @p -> @_ "The self-adjusting property of splay trees is combined with a self-balancing property, thereby improving the worst-case complexity of basic operations from linear to logarithmic to the size of the tree. The resulting persistent data structures can be used to efficiently and adaptively simulate other specialized data structures."
             @p -> @_ "Keywords: self-balancing trees, self-adjusting"
             @div id:"TOC", ->
                 @ul ->
@@ -67,16 +77,16 @@ require('html2cup').modApply ->
             @h2 id:"introduction", ->
                 @S().a href:"#introduction", -> @_ "Introduction"
             @p -> @_ "Among the data structures available to programmers, some of them, like lists, stacks or queues are specialized for sequential, or local-access operations. Others, like balanced trees, are specialized for random-access operations."
-            @_ 
+            @p -> @_ 
                 ''''
                 
                 The goal of this paper is addressing the duality between these data-structures, by providing algorithms for a generic tree structure reconciling constant time bounds for sequential and local operations, with logarithmic time bounds for random-access operations. For brevity in this paper ``focal'' will be used to indicate either sequential or local type of accesses and combinations of them.
                 
-            @table ->
+            @table class:"pure-table", ->
                     @tr ->
                         @td ->
-                        @th colspan:"2", -> @_ " \nrandom insert/replace/delete\n"
-                        @.th -> @_ " \nfocal insert/replace/delete\n"
+                        @th colspan:"2", -> @_ " \nrandom<br/>insert/replace/delete\n"
+                        @.th -> @_ " \nfocal<br/>insert/replace/delete\n"
                     @tr ->
                         @td ->
                         @th -> @_ "\namortized\n"
@@ -103,9 +113,9 @@ require('html2cup').modApply ->
             @p -> @_ "Finally, a fully constant-time rebalancing operation is embedded into the splay operation."
             @p -> @_ "Each step will supported by theoretically and/or experimentally."
             @p -> @_ "For ease of analisys of the time bounds, an eager order of execution will be assumed.  The pseudocode in this paper is in a fictional, indentation-sensitive language inspired by Mythyrl."
-            @h2 id:"basic-theories-and-techniques", ->
+            @h1 id:"basic-theories-and-techniques", ->
                 @a href:"#basic-theories-and-techniques", -> @_ "Basic theories and techniques"
-            @h1 id:"functional-set-operations", ->
+            @h2 id:"functional-set-operations", ->
                 @a href:"#functional-set-operations", -> @_ "Functional set operations"
             @p ->
                 @span class:"math", -> @_ "\\[\n\\newcommand{\\lincell}{\\cellcolor{gray2}\\text{linear}}\n\\newcommand{\\logcell}{\\cellcolor{gray1}\\text{logarithmic}}\n\\newcommand{\\concell}{\\text{constant}}\n\\newcommand{\\insert}{\\mathit{\\textbf{insert}}}\n\\newcommand{\\member}{\\textbf{member}}\n\\newcommand{\\concat}{\\textbf{concat}}\n\\newcommand{\\delete}{\\textbf{delete}}\n\\newcommand{\\queuepush}{\\mathit{\\textbf{push}}}\n\\newcommand{\\queuepop}{\\textbf{pop}}\n\\newcommand{\\seqfirst}{\\textbf{first}}\n\\newcommand{\\seqlast}{\\textbf{last}}\n\\newcommand{\\seqjoin}{\\textbf{join}}\n\\newcommand{\\seqsplit}{\\textbf{split}}\n\\newcommand{\\height}{\\textbf{h}}\n\\newcommand{\\size}{\\textbf{s}}\n\\newcommand{\\Tree}{\\mathsf{Tree}}\n\\newcommand{\\Measures}{\\mathsf{Measures}}\n\\newcommand{\\Height}{\\mathsf{Height}}\n\\newcommand{\\node}{\\textbf{node}}\n\\newcommand{\\splay}{\\textbf{splay}}\n\\newcommand{\\massage}{\\textbf{massage}}\n\\newcommand{\\descend}{\\textbf{descend}}\n\\newcommand{\\compress}{\\textbf{pack}}\n\\newcommand{\\add}{\\textbf{add}}\n\\newcommand{\\build}{\\textbf{build}}\n\\newcommand{\\ascend}{\\textbf{ascend}}\n\\newcommand{\\loopy}{\\textbf{loop}}\n\\newcommand{\\true}{\\boldsymbol{\\top}}\n\\newcommand{\\false}{\\boldsymbol{\\bot}}\n\\newcommand{\\indent}{\\;\\;\\;\\;}\n\\newcommand{\\gentree}{\\textbf{G}}\n\\newcommand{\\baltree}{\\textbf{B}}\n\\newcommand{\\splayop}{\\textbf{Spl}}\n\\newcommand{\\genop}{\\textbf{Gen}}\n\\newcommand{\\massageop}{\\textbf{Mas}}\n\\newcommand{\\OrderedSet}{\\textbf{X}}\n\\newcommand{\\emptytup}{\\varnothing}\n\\newcommand{\\balancedness}{\\textbf{b}}\n\\newcommand{\\codedescription}[1]{\\mathit{#1}}\n\\]"
@@ -174,7 +184,7 @@ require('html2cup').modApply ->
                 @_ "In this definition, the operator "
                 @span class:"math", -> @_ "\\(\\oplus\\)"
                 @_ " returns the maximum of the two operands."
-            @h2 id:"functional-splay-trees", ->
+            @h1 id:"functional-splay-trees", ->
                 @S().a href:"#functional-splay-trees", -> @_ "Functional splay trees"
             @p -> @_ "Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties {[}SELFADJ{]}:"
             @ul ->
@@ -186,7 +196,7 @@ require('html2cup').modApply ->
             @p -> @_ "This splay variant has been shown experimentally to be more performant than a top-down functional splaying algorithm, and has the additional advantages of a concise implementation and simpler analysis."
             @p -> @_ "The splay operation is typically performed before other basic operations to bring the target node to the top, and to optimize subsequent operations in the same locality of reference:"
             @p ->
-                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(t,x)\\to(\\splay(t,x),\\member_{\\genop}(\\splay(t,x),x))\\\\\n &amp; \\indent t\\leftarrowtail\\splay(t,x)\\\\\n &amp; \\indent\\left\\langle t,\\member_{\\genop}(t,x)\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\splayop}(t,x)\\to\\insert_{\\genop}(\\splay(t,x),x)\\\\\n &amp; \\delete_{\\splayop}(t,x)\\to\\delete_{\\text{\\ensuremath{\\genop}}}(\\splay(t,x),x)\n\\end{aligned}\n\\end{align}\n\\]"
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(t,x)\\to(\\splay(t,x),\\member_{\\genop}(\\splay(t,x),x))\\\\\n &amp; \\indent t\\leftarrowtail\\splay(t,x)\\\\\n &amp; \\indent\\left\\langle t,\\member_{\\genop}(t,x)\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\splayop}(t,x)\\to\\insert_{\\genop}(\\splay(t,x),x)\\\\\n &amp; \\delete_{\\splayop}(t,x)\\to\\delete_{\\genop}(\\splay(t,x),x)\n\\end{aligned}\n\\end{align}\n\\]"
             @p ->
                 @_ "It is equivalently possible to perform the splay operation  the corresponding function for generic binary search tree: "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{cases}\n &amp; f_{1}(t,x)=\\splay(f_{\\genop}(t,x),x)\\\\\n &amp; f_{2}(t,x)=f_{\\genop}(\\splay(t,x),x)\n\\end{cases}\n\\end{equation}\n\\]"
@@ -285,7 +295,7 @@ require('html2cup').modApply ->
             @p -> @_ "The height increase after a basic binary tree lookup is zero."
             @p -> @_ "The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth."
             @p -> @_ "Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant."
-            @h2 id:"a-monolithic-rebalancing-function", ->
+            @h1 id:"a-monolithic-rebalancing-function", ->
                 @S().a href:"#a-monolithic-rebalancing-function", -> @_ "A monolithic rebalancing function"
             @p ->
                 @_ "The "
@@ -327,41 +337,41 @@ require('html2cup').modApply ->
             @h3 id:"operations-on-massage-trees-1", ->
                 @S().a href:"#operations-on-massage-trees-1", -> @_ "Operations on massage trees"
             @p -> @_ "The freedom in the order execution of the splay, massage operations, allows us to embed the rebalancing operation into the splay operation."
-            @h2 id:"experimental-results", ->
+            @h1 id:"experimental-results", ->
                 @S().a href:"#experimental-results", -> @_ "Experimental results"
-            @h2 id:"applications", ->
+            @h1 id:"applications", ->
                 @S().a href:"#applications", -> @_ "Applications"
-            @h3 id:"queues", ->
+            @h2 id:"queues", ->
                 @S().a href:"#queues", -> @_ "Queues"
             @p ->
                 @_ "Queue operations can be defined efficiently on massage trees: "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; \\splay_{\\seqfirst}(t)=\\splay(t,\\seqfirst(t))\\\\\n &amp; f_{s}(t,x)=\\massage(f_{s,\\genop}(\\splay_{\\seqfirst}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
-            @h3 id:"deques", ->
+            @h2 id:"deques", ->
                 @S().a href:"#deques", -> @_ "Deques"
             @p -> @_ "Similarly, deque operations can be defined on massage trees:"
             @p ->
-                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; s\\in\\left\\{ \\seqlast,\\seqfirst\\right\\} \\\\\n &amp; \\splay_{s}=(t)\\mapsto\\splay(t,s(t))\\\\\n &amp; \\splay_{\\seqfirst,\\seqlast}=\\splay_{\\seqfirst}\\cdot\\splay_{\\seqlast}\\\\\n &amp; f_{s}(t,x)\\to\\massage(f_{s,\\genop}(\\splay_{\\seqfirst}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
+                @S().span class:"math", -> @_ "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; s\\in\\left\\{ \\seqlast,\\seqfirst\\right\\} \\\\\n &amp; \\splay_{s}=(t)\\mapsto\\splay(t,s(t))\\\\\n &amp; \\splay_{\\seqfirst,\\seqlast}=\\splay_{\\seqfirst}\\cdot\\splay_{\\seqlast}\\\\\n &amp; f_{s}(t,x)\\to\\massage(f_{s,\\genop}(\\splay_{\\seqfirst,\\seqlast}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
             @p ->
                 @_ "The "
                 @span class:"math", -> @_ "\\(\\splay_{\\seqfirst,\\seqlast}\\)"
                 @_ " operation splays both the first and the last node of the tree. This is necessary to make subsequent accesses to any of the ends of the deque constant-time."
-            @h3 id:"dynamic-arrays", ->
+            @h2 id:"dynamic-arrays", ->
                 @S().a href:"#dynamic-arrays", -> @_ "Dynamic arrays"
             @p -> @_ "Massage trees can be used to implement dynamic arrays efficently."
             @p -> @_ "The split operation is implemented as a variant of the splay operation."
-            @h3 id:"linked-list", ->
+            @h2 id:"linked-list", ->
                 @S().a href:"#linked-list", -> @_ "Linked-list"
             @p -> @_ "Massage trees support linked-list operations."
-            @h3 id:"ropes", ->
+            @h2 id:"ropes", ->
                 @S().a href:"#ropes", -> @_ "Ropes"
             @p -> @_ "Massage trees make it possible to implement a functional alternative to gap buffers."
-            @h2 id:"conclusions", ->
+            @h1 id:"conclusions", ->
                 @S().a href:"#conclusions", -> @_ "Conclusions"
             @p -> @_ "Massage Trees - Extend the applications of self-adjusting trees to areas initially covered only by balanced trees - Extend the applications of balanced trees to areas so far only covered by ad-hoc structures, like queues, lists or stacks."
             @p -> @_ "Data-structure implemented by massage trees can adapts interactively to different usage patterns."
-            @h2 id:"appendix", ->
+            @h1 id:"appendix", ->
                 @S().a href:"#appendix", -> @_ "Appendix"
-            @h3 id:"terminology", ->
+            @h1 id:"terminology", ->
                 @S().a href:"#terminology", -> @_ "Terminology"
             @ul ->
                 @li ->
