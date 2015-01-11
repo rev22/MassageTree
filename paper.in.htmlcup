@@ -54,9 +54,6 @@ require('html2cup').modApply ->
                         @ul ->
                             @li ->
                                 @a href:"#operations-on-massage-trees", -> @_ "Operations on massage trees"
-                                @ul ->
-                                    @li ->
-                                        @a href:"#operations-on-massage-trees-1", -> @_ "Operations on massage trees"
                     @li ->
                         @a href:"#experimental-results", -> @_ "Experimental results"
                     @li ->
@@ -114,7 +111,7 @@ require('html2cup').modApply ->
                         @td ->
                             @strong -> @_ "O(log(n))"
                         @td -> @_ "\nO(1)\n"
-            @p -> @_ "This paper will first survey cover basic techniques and theories for splay trees, then describe a rebalancing operation with amortized constant time complexity that can be employed to lower the worst-case time bounds of all basic operations."
+            @p -> @_ "This paper will first cover basic techniques and theories for splay trees, then describe a rebalancing operation with amortized constant time complexity that can be employed to lower the worst-case time bounds of all basic operations."
             @p -> @_ "Finally, a fully constant-time rebalancing operation is embedded into the splay operation."
             @p -> @_ "Each step will supported by theoretically and/or experimentally."
             @p -> @_ "For ease of analisys of the time bounds, an eager order of execution will be assumed.  The pseudocode in this paper is in a fictional, indentation-sensitive language inspired by Mythyrl."
@@ -171,7 +168,7 @@ require('html2cup').modApply ->
                 @span class:"math", -> @_ "\\((s+1)\\in\\left\\{ x^{2}\\mid x\\in\\mathbb{N}\\right\\} \\)"
                 @_ 
                     ''''
-                    . \end{lem} For arbitrary sizes, rounding up the result is necessary:
+                    . For arbitrary sizes, rounding up the result is necessary:
             @p ->
                 @S().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\height_{\\text{t}}(s)=\\left\\lceil \\log_{2}(s+1)\\right\\rceil \\in\\mathbb{N}\n\\end{equation}\n\\]"
             @p ->
@@ -376,9 +373,7 @@ require('html2cup').modApply ->
             @p ->
                 @_ "The massage operation may equivalently be performed  or  the corresponding function for splay trees: "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{cases}\n &amp; f_{1}(t,x)=\\massage(f_{\\splayop}(t,x))\\\\\n &amp; f_{2}(t,x)=f_{\\splayop}(\\massage(t),x)\n\\end{cases}\n\\end{equation}\n\\]"
-            @h3 id:"operations-on-massage-trees-1", ->
-                @S().a href:"#operations-on-massage-trees-1", -> @_ "Operations on massage trees"
-            @p -> @_ "The freedom in the order execution of the splay, massage operations, allows us to embed the rebalancing operation into the splay operation."
+            @p -> @_ "The freedom in the order execution of the splay and massage operations, allows embedding the rebalancing operation into the splay operation."
             @h1 id:"experimental-results", ->
                 @S().a href:"#experimental-results", -> @_ "Experimental results"
             @h1 id:"applications", ->

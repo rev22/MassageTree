@@ -64,11 +64,6 @@ ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
                             <ul>
                                 <li>
                                     <a href="#operations-on-massage-trees">Operations on massage trees</a>
-                                    <ul>
-                                        <li>
-                                            <a href="#operations-on-massage-trees-1">Operations on massage trees</a>
-                                        </li>
-                                    </ul>
                                 </li>
                             </ul>
                         </li>
@@ -162,7 +157,7 @@ O(1)
 </td>
                     </tr>
                 </table>
-                <p>This paper will first survey cover basic techniques and theories for splay trees, then describe a rebalancing operation with amortized constant time complexity that can be employed to lower the worst-case time bounds of all basic operations.</p>
+                <p>This paper will first cover basic techniques and theories for splay trees, then describe a rebalancing operation with amortized constant time complexity that can be employed to lower the worst-case time bounds of all basic operations.</p>
                 <p>Finally, a fully constant-time rebalancing operation is embedded into the splay operation.</p>
                 <p>Each step will supported by theoretically and/or experimentally.</p>
                 <p>For ease of analisys of the time bounds, an eager order of execution will be assumed.  The pseudocode in this paper is in a fictional, indentation-sensitive language inspired by Mythyrl.</p>
@@ -256,7 +251,7 @@ O(1)
 \size_{\text{t}}(n) &amp; = &amp; \sum_{x=1}^{n}2^{n-1}=1\frac{1-2^{n}}{1-2}=2^{n}-1
 \end{eqnarray}
 \]</span></p>
-                <p><em>Lemma:</em> The height of a perfectly balanced binary tree of size s is <span class="math">\(\height_{\text{t}}(s)=\log_{2}(s+1)\)</span> for <span class="math">\((s+1)\in\left\{ x^{2}\mid x\in\mathbb{N}\right\} \)</span>. \end{lem} For arbitrary sizes, rounding up the result is necessary:</p>
+                <p><em>Lemma:</em> The height of a perfectly balanced binary tree of size s is <span class="math">\(\height_{\text{t}}(s)=\log_{2}(s+1)\)</span> for <span class="math">\((s+1)\in\left\{ x^{2}\mid x\in\mathbb{N}\right\} \)</span>. For arbitrary sizes, rounding up the result is necessary:</p>
                 <p><span class="math">\[
 \begin{equation}
 \height_{\text{t}}(s)=\left\lceil \log_{2}(s+1)\right\rceil \in\mathbb{N}
@@ -548,8 +543,7 @@ c\\
 \end{cases}
 \end{equation}
 \]</span></p>
-                <h3 id="operations-on-massage-trees-1"><a href="#operations-on-massage-trees-1">Operations on massage trees</a></h3>
-                <p>The freedom in the order execution of the splay, massage operations, allows us to embed the rebalancing operation into the splay operation.</p>
+                <p>The freedom in the order execution of the splay and massage operations, allows embedding the rebalancing operation into the splay operation.</p>
                 <h1 id="experimental-results"><a href="#experimental-results">Experimental results</a></h1>
                 <h1 id="applications"><a href="#applications">Applications</a></h1>
                 <h2 id="queues"><a href="#queues">Queues</a></h2>
