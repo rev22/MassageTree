@@ -66,7 +66,7 @@ require('html2cup').modApply ->
                                     @li ->
                                         @S().a href:"#dynamic-arrays", -> @_ "Dynamic arrays"
                                     @li ->
-                                        @S().a href:"#linked-list", -> @_ "Linked-list"
+                                        @S().a href:"#linked-lists", -> @_ "Linked-lists"
                                     @li ->
                                         @S().a href:"#ropes", -> @_ "Ropes"
                     @li ->
@@ -395,8 +395,8 @@ require('html2cup').modApply ->
                 @S().a href:"#dynamic-arrays", -> @_ "Dynamic arrays"
             @p -> @_ "Massage trees can be used to implement dynamic arrays efficently."
             @p -> @_ "The split operation is implemented as a variant of the splay operation."
-            @h2 id:"linked-list", ->
-                @S().a href:"#linked-list", -> @_ "Linked-list"
+            @h2 id:"linked-lists", ->
+                @S().a href:"#linked-lists", -> @_ "Linked-lists"
             @p -> @_ "Massage trees support linked-list operations."
             @h2 id:"ropes", ->
                 @S().a href:"#ropes", -> @_ "Ropes"
