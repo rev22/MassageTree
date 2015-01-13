@@ -1,5 +1,22 @@
+bibliography =
+  selfadj:
+    ''''
+    Self-Adjusting Binary Search Trees
+    Daniel Dominic Sleator and Robert Endre Tarjan
+    AT&T Bell Laboratories, Murray Hill, NJ
+    
+  
 require('html2cup').modApply ->
     leCode = (x)=> @p -> @S().span class:"math leCode", -> @_ x
+    proof = (x)=>
+      @section ->
+          @em class:"proofpart", "Proof:"
+          x.apply @
+          @p class:"proofpart proofend", "∎"
+    lemma = (x)=>
+      @section ->
+          @em class:"proofpart", "Lemma:"
+          x.apply @
     @docType "html"
     @html xmlns:"http://www.w3.org/1999/xhtml", ->
         @head ->
@@ -14,7 +31,7 @@ require('html2cup').modApply ->
                 code { white-space: pre; }
                 body, html { background: white; }
                 h1, h2, h3, h4, h5, a { color: black; text-decoration: none; }
-                h1, h2, h3, h4, h5, p { padding: 0.5em; margin: 0.5em; }
+                h1, h2, h3, h4, h5, p, .proofpart { padding: 0.5em; margin: 0.5em; }
                 table.pure-table { padding: 2.0em; margin: 2.0em; }
                 ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
                 .leCode .math {
@@ -22,11 +39,19 @@ require('html2cup').modApply ->
                   border: 1px dashed grey;
                   padding: 0.5em;
                 }
+                .proofpart {
+                  padding-left: 1em;
+                }
+                .proofend {
+                  font-size: 150;
+                  font-weight: bold;
+                  padding-bottom: 2em;
+                }
             @script src:"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML", type:"text/javascript"
         @body ->
          @div class:"pure-g", ->
           @div class:"pure-u-1", ->
-            @p -> @em -> @_ "Michele Bini <michele.bini@gmail.com>, 2014-02-22; last draft: 2015-01-11"
+            @p -> @em -> @_ "Michele Bini <michele.bini@gmail.com>, 2014-02-22; last draft: 2015-01-13"
             @p -> @_ "The self-adjusting property of splay trees is combined with a self-balancing property, thereby improving the worst-case complexity of basic operations from linear to logarithmic to the size of the tree. The resulting persistent data structures can be used to efficiently and adaptively simulate other specialized data structures."
             @p -> @_ "Keywords: self-balancing trees, self-adjusting"
             @div id:"TOC", ->
@@ -72,10 +97,7 @@ require('html2cup').modApply ->
                     @li ->
                         @S().a href:"#conclusions", -> @_ "Conclusions"
                      @li ->
-                                @_().a href:"#appendix", -> @_ "Appendix"
-                                @S().ul ->
-                                    @li ->
-                                        @S().a href:"#terminology", -> @_ "Terminology"
+                                @_().a href:"#literature-cited", -> @_ "Literature Cited"
             @h2 id:"introduction", ->
                 @S().a href:"#introduction", -> @_ "Introduction"
             @p -> @_ "Among the data structures available to programmers, some of them, like lists, stacks or queues are specialized for sequential, or local-access operations. Others, like balanced trees, are specialized for random-access operations."
@@ -144,24 +166,22 @@ require('html2cup').modApply ->
             @h2 id:"evaluating-tree-balance", ->
                 @S().a href:"#evaluating-tree-balance", -> @_ "Evaluating tree balance"
             @p -> @_ "Basic operations on binary trees have worst-case time bounds proportional to the height of the tree, defined as the distance between the root node and the deepest node of the tree."
-            @p ->
-                @_().em -> @_ "Lemma:"
-                @_ " A perfectly balanced binary tree of height "
+            lemma ->
+                @span "A perfectly balanced binary tree of height "
                 @span class:"math", -> @_ "\\(h\\)"
                 @_ " has size "
                 @span class:"math", -> @_ "\\(2^{h}-1\\)"
                 @_ "."
-            @p ->
-                @_().em -> @_ "Proof:"
-                @_ " Let "
+            proof ->
+              @p ->
+                @_ "Let "
                 @span class:"math", -> @_ "\\(\\size_{\\text{t}}(h)\\)"
                 @_ " be the size of a perfect binary tree of height "
                 @span class:"math", -> @_ "\\(h\\)"
                 @_ "."
-            @p ->
+              @p ->
                 @S().span class:"math", -> @_ "\\[\n\\begin{eqnarray}\n\\size_{\\text{t}}(1) &amp; = &amp; 1\\\\\n\\size_{\\text{t}}(n) &amp; = &amp; \\size_{\\text{t}}(n-1)+2^{n-1}\\\\\n\\size_{\\text{t}}(n) &amp; = &amp; \\sum_{x=1}^{n}2^{n-1}=1\\frac{1-2^{n}}{1-2}=2^{n}-1\n\\end{eqnarray}\n\\]"
-            @p ->
-                @_().em -> @_ "Lemma:"
+              @p ->
                 @_ " The height of a perfectly balanced binary tree of size s is "
                 @span class:"math", -> @_ "\\(\\height_{\\text{t}}(s)=\\log_{2}(s+1)\\)"
                 @_ " for "
@@ -186,7 +206,9 @@ require('html2cup').modApply ->
                 @_ " returns the maximum of the two operands."
             @h1 id:"functional-splay-trees", ->
                 @S().a href:"#functional-splay-trees", -> @_ "Functional splay trees"
-            @p -> @_ "Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties {[}SELFADJ{]}:"
+            @p ->
+              @_ "Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties "
+              @_ "(Sleator and Tarjan, 1985)" # ref 'selfadj'
             @ul ->
                 @li -> @_ "bringing to the top the target node"
                 @li -> @_ "reduce the height of the tree along the path to the target node"
@@ -203,7 +225,10 @@ require('html2cup').modApply ->
             @p -> @_ "For optimal performance of implementations of splay trees, it is adviced to embed the splay operation into the basic binary search tree operation."
             leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},\\false\\right\\rangle \\\\\n &amp; \\member_{\\splayop}(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(\\true,m,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(\\false,m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend(v,x,l,r,\\left\\langle l_{f,},r_{f}\\right\\rangle )\\to\\\\\n &amp; \\indent\\left\\langle \\left\\langle \\build(\\node_{l},l,l_{f}),x,\\build(\\node_{r},r,r_{f})\\right\\rangle _{\\gentree},v\\right\\rangle \n\\end{aligned}\n\\end{align}\n\\]"
             leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\insert_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},x,\\emptytup_{\\gentree}\\right\\rangle _{\\gentree}\\\\\n &amp; \\insert_{\\splayop}(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f))\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f))\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(x,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(x,\\emptytup_{\\gentree},f) &amp;  &amp; \\to\\ascend(x,\\emptytup_{\\gentree},\\emptytup_{\\gentree},f)\\\\\n &amp; \\descend^{\\prime}(x,t,f) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\end{align}\n\\]"
-            @p -> @_ "In the original paper for splay trees {[}selfadj{]}, basic set operations are constructed by first embedding the splay operation into each access/join/split operation, then defining insert and delete in terms of split and join. While conceptually simple, this has the drawback, for the delete operation, that two distinct splay operations would be performed."
+            @p ->
+              @_ "In the original paper for splay trees "
+              @_ "(Sleator and Tarjan, 1985:662)" # ref 'selfadj'
+              @_ ", basic set operations are constructed by first embedding the splay operation into each access/join/split operation, then defining insert and delete in terms of split and join. While conceptually simple, this has the drawback, for the delete operation, that two distinct splay operations would be performed."
             leCode
                   ''''
                   \[
@@ -251,17 +276,15 @@ require('html2cup').modApply ->
                   
             @h2 id:"analysis-of-the-splay-operation", ->
                 @S().a href:"#analysis-of-the-splay-operation", -> @_ "Analysis of the splay operation"
-            @p ->
-                @_().em -> @_ "Lemma:"
-                @_ " The maximum height increase of a tree after a suitably designed splay operation is constant."
-            @p ->
+            lemma ->
+              @span "The maximum height increase of a tree after a suitably designed splay operation is constant."
+              @p ->
                 @S().span class:"math", -> @_ "\\[\n\\forall x\\in\\gentree\\colon(\\height(\\splay(x))-\\height(x))\\oplus0=O(1)\n\\]"
-            @p ->
-                @_().em -> @_ "Proof:"
-                @_ " Splaying the empty tree results in an empty tree, with no height change."
-            @p -> @_ "For non-empty trees, we analize the behaviour of the previously provided splaying algorithm. In this implementation the splaying operation can be subdivided into a descending phase, and an assembling phase."
-            @p -> @_ "The descending phase starts with the tree to splay and two lists of trees initially empty, each representing one half of a finger structure. During each step of the descending phase, if the node to bring to the top is not the one being visited, the subtree more distant to the target node is added to the the corresponding list in the finger structure. When the node to bring to the top is visited, a new tree is assembled, by first assembling each of the lists of trees in each side into a tree, and then adding the resulting trees as subtrees of the top node. Therefore, the resulting tree has an height of one plus the maximum height of the subtrees assembled from the lists in the finger structure. Thus proving that the height of the assembled subtree can at most increase by a constant compared to the original tree, is equivalent to proving this lemma."
-            @p ->
+            proof ->
+              @span "Splaying the empty tree results in an empty tree, with no height change."
+              @p -> @_ "For non-empty trees, we analize the behaviour of the previously provided splaying algorithm. In this implementation the splaying operation can be subdivided into a descending phase, and an assembling phase."
+              @p -> @_ "The descending phase starts with the tree to splay and two lists of trees initially empty, each representing one half of a finger structure. During each step of the descending phase, if the node to bring to the top is not the one being visited, the subtree more distant to the target node is added to the the corresponding list in the finger structure. When the node to bring to the top is visited, a new tree is assembled, by first assembling each of the lists of trees in each side into a tree, and then adding the resulting trees as subtrees of the top node. Therefore, the resulting tree has an height of one plus the maximum height of the subtrees assembled from the lists in the finger structure. Thus proving that the height of the assembled subtree can at most increase by a constant compared to the original tree, is equivalent to proving this lemma."
+              @p ->
                 @_ "Let "
                 @span class:"math", -> @_ "\\(m\\in\\mathbb{N}\\)"
                 @_ " be the height of the tree before the splay operation, and "
@@ -276,36 +299,36 @@ require('html2cup').modApply ->
                 @span class:"math", -> @_ "\\(s\\)"
                 @_ " is the size of the subsequence. It may be noted that "
                 @Z().span class:"math", -> @_ "\\(n_{x}\\ge x\\)"
-            @p -> @_ "During the assembling phase, the subtrees are assembled back in reverse order, starting from the last node, also the one with the minimum of the maximum possible heights of the subtrees."
-            @p ->
+              @p -> @_ "During the assembling phase, the subtrees are assembled back in reverse order, starting from the last node, also the one with the minimum of the maximum possible heights of the subtrees."
+              @p ->
                 @_ "According to the build algorithm defined in (2.21) the maximum height "
                 @span class:"math", -> @_ "\\(\\height_{m}\\)"
                 @_ " of a tree assembled from such a subsequence is defined recursively by:"
-            @p ->
+              @p ->
                 @S().span class:"math", -> @_ "\\[\n\\begin{eqnarray*}\n &amp;  &amp; \\height_{m}(a,b,c,d\\ldots)=\\height_{m}(a\\boxplus(b\\boxplus c),d...)\\\\\n &amp;  &amp; \\height_{m}(a,b)=a\\boxplus b\\\\\n &amp;  &amp; \\height_{m}(a)=a\n \\end{eqnarray*}\n\\]"
-            @p ->
+              @p ->
                 @_ "with "
                 @span class:"math", -> @_ "\\(a\\boxplus b=(a\\oplus b)+1\\)"
                 @_ " and "
                 @span class:"math", -> @_ "\\(a\\oplus b=\\max(a,b)\\)"
                 @_ "."
-            @p -> @_ "It is possible to distribute additions of positive values, over the maximum operator:"
-            @p ->
+              @p -> @_ "It is possible to distribute additions of positive values, over the maximum operator:"
+              @p ->
                 @_().span class:"math", -> @_ "\\((a\\oplus b)+n=(a+n)\\oplus(b+n)\\)"
                 @_ " for "
                 @Z().span class:"math", -> @_ "\\(n\\in\\mathbb{N}\\)"
-            @p ->
+              @p ->
                 @_ "By recursively applying the "
                 @span class:"math", -> @_ "\\(n\\in\\mathbb{N}\\)"
                 @_ " function and distributing additions, if s is odd, one obtains:"
-            @p ->
+              @p ->
                 @S().span class:"math", -> @_ "\\[\n\\height_{m}(x_{s},\\ldots,x_{2},x_{1})=(x_{s}+\\frac{s-1}{2})\\oplus\\ldots\\oplus(x_{4}+3)\\oplus(x_{3}+3)\\oplus(x_{2}+2)\\oplus(x_{1}+2)\n\\]"
-            @p ->
+              @p ->
                 @_ "Substituting "
                 @span class:"math", -> @_ "\\(x_{y}\\to m-n_{y}\\)"
                 @_ " "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{eqnarray*}\n\\text{} &amp;  &amp; \\height_{m}(x_{s},\\ldots,x_{2},x_{1})=\\\\\n &amp;  &amp; =(m-n_{s}+\\frac{s-1}{2}\\oplus\\ldots\\oplus(m-n_{4}+3)\\oplus(m-n_{3}+3)\\oplus(m-n_{2}+2)\\oplus(m-n_{1}+2)\n\\end{eqnarray*}\n\\]"
-            @p ->
+              @p ->
                 @_ "Given that "
                 @span class:"math", -> @_ "\\(n_{x}\\ge x\\)"
                 @_ ", the maximum possible of these terms is the last one "
@@ -315,25 +338,23 @@ require('html2cup').modApply ->
                 @_ ", one obtains that the maximum possible height of the assembled subtree is "
                 @span class:"math", -> @_ "\\(m+1\\)"
                 @_ "."
-            @p ->
+              @p ->
                 @_ "If s is even: "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{eqnarray*}\n\\text{} &amp;  &amp; \\height_{m}(x_{s},\\ldots,x_{2},x_{1})=(x_{s}+\\frac{s}{2})\\oplus\\ldots\\oplus(x_{3}+3)\\oplus(x_{2}+3)\\oplus(x_{1}+1)\n\\end{eqnarray*}\n\\]"
-            @p ->
+              @p ->
                 @_ "In this case the term with the maximum possible value is "
                 @span class:"math", -> @_ "\\((x_{2}+3)\\)"
                 @_ ". By applying the same steps as above, one similarly obtains that the maximum possible height for the assembled subtree is "
                 @span class:"math", -> @_ "\\(m+1\\)"
                 @_ "."
-            @p -> @_ "The maximum possible height increase of a tree after the splay operation defined in (2.19) is 2."
-            @p ->
-                @_().em -> @_ "Lemma:"
-                @_ " It is possible to design basic operations on splay trees whose maximum height increase is constant. Basic operations on splay trees considered in this lemma are lookup, insert and delete."
-            @p ->
-                @_().em -> @_ "Proof:"
-                @_ " The maximum height increase after a suitably designed splay operation is constant."
-            @p -> @_ "The height increase after a basic binary tree lookup is zero."
-            @p -> @_ "The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth."
-            @p -> @_ "Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant."
+              @p -> @_ "The maximum possible height increase of a tree after the splay operation defined in (2.19) is 2."
+            lemma ->
+              @span "It is possible to design basic operations on splay trees whose maximum height increase is constant. Basic operations on splay trees considered in this lemma are lookup, insert and delete."
+            proof ->
+              @p -> @_ "The maximum height increase after a suitably designed splay operation is constant."
+              @p -> @_ "The height increase after a basic binary tree lookup is zero."
+              @p -> @_ "The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth."
+              @p -> @_ "Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant."
             @h1 id:"a-monolithic-rebalancing-function", ->
                 @S().a href:"#a-monolithic-rebalancing-function", -> @_ "A monolithic rebalancing function"
             @p ->
@@ -376,6 +397,7 @@ require('html2cup').modApply ->
             @p -> @_ "The freedom in the order execution of the splay and massage operations, allows embedding the rebalancing operation into the splay operation."
             @h1 id:"experimental-results", ->
                 @S().a href:"#experimental-results", -> @_ "Experimental results"
+            @p -> @em "Section to be expanded..."
             @h1 id:"applications", ->
                 @S().a href:"#applications", -> @_ "Applications"
             @h2 id:"queues", ->
@@ -400,7 +422,10 @@ require('html2cup').modApply ->
             @p -> @_ "Massage trees support linked-list operations."
             @h2 id:"ropes", ->
                 @S().a href:"#ropes", -> @_ "Ropes"
-            @p -> @_ "Massage trees make it possible to implement a functional alternative to gap buffers."
+            @p -> @_ "Massage trees make it possible to implement a functional alternative to gap buffers; with additional advantages:"
+            @ul ->
+              @li "performance never degrades to linear for any operations or worst cases"
+              @li "straightforward support of versioning and undo"
             @h1 id:"conclusions", ->
                 @S().a href:"#conclusions", -> @_ "Conclusions"
             @p ->
@@ -408,12 +433,14 @@ require('html2cup').modApply ->
               @ul ->
                 @li "extend the applications of self-adjusting trees to areas initially covered only by balanced trees."
                 @li "extend the applications of balanced trees to areas so far only covered by ad-hoc structures, like queues, lists or stacks."
-            @p -> @_ "Data-structure implemented by massage trees can adapt interactively to different usage patterns."
-            @h1 id:"appendix", ->
-                @S().a href:"#appendix", -> @_ "Appendix"
-            @h1 id:"terminology", ->
-                @S().a href:"#terminology", -> @_ "Terminology"
-            @ul ->
-                @li ->
-                    @_().em -> @_ "Binary search tree"
-                    @_ " - an ordered binary tree, without duplicate nodes"
+            @p ->
+              @_ "Data-structures implemented by massage trees adapt interactively to different usage patterns, reducing or eliminating the need to transform the data into specialized structures for efficient processing:"
+              @ul ->
+                @li "logarithmic worst-case time bounds for all operations"
+                @li "amortized constant times for focal operations"
+            @h1 id:"literature-cited", -> @_ "Literature Cited"
+            @p -> @_
+                ''''
+                Daniel Dominic Sleator and Robert Endre Tarjan, 1985. Self-Adjusting Binary Search Trees.
+                AT&T Bell Laboratories, Murray Hill, NJ; Journal of the Association for Computing Machinery. Vol. 32, No. 3, July 1985, pp. 652-686.
+

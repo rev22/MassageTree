@@ -11,13 +11,21 @@
         <style type="text/css">code { white-space: pre; }
 body, html { background: white; }
 h1, h2, h3, h4, h5, a { color: black; text-decoration: none; }
-h1, h2, h3, h4, h5, p { padding: 0.5em; margin: 0.5em; }
+h1, h2, h3, h4, h5, p, .proofpart { padding: 0.5em; margin: 0.5em; }
 table.pure-table { padding: 2.0em; margin: 2.0em; }
 ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
 .leCode .math {
   /* background: #ffc; */
   border: 1px dashed grey;
   padding: 0.5em;
+}
+.proofpart {
+  padding-left: 1em;
+}
+.proofend {
+  font-size: 150;
+  font-weight: bold;
+  padding-bottom: 2em;
 }</style>
         <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
     </head>
@@ -25,7 +33,7 @@ ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
         <div class="pure-g">
             <div class="pure-u-1">
                 <p>
-                    <em>Michele Bini <michele.bini@gmail.com>, 2014-02-22; last draft: 2015-01-11</em>
+                    <em>Michele Bini <michele.bini@gmail.com>, 2014-02-22; last draft: 2015-01-13</em>
                 </p>
                 <p>The self-adjusting property of splay trees is combined with a self-balancing property, thereby improving the worst-case complexity of basic operations from linear to logarithmic to the size of the tree. The resulting persistent data structures can be used to efficiently and adaptively simulate other specialized data structures.</p>
                 <p>Keywords: self-balancing trees, self-adjusting</p>
@@ -76,13 +84,13 @@ ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
                                 <li><a href="#queues">Queues</a></li>
                                 <li><a href="#deques">Deques</a></li>
                                 <li><a href="#dynamic-arrays">Dynamic arrays</a></li>
-                                <li><a href="#linked-list">Linked-list</a></li>
+                                <li><a href="#linked-lists">Linked-lists</a></li>
                                 <li><a href="#ropes">Ropes</a></li>
                             </ul>
                         </li>
                         <li><a href="#conclusions">Conclusions</a></li>
-                        <li><a href="#appendix">Appendix</a><ul>
-                                <li><a href="#terminology">Terminology</a></li></ul></li>
+                        <li><a href="#literature-cited">Literature Cited</a>
+                        </li>
                     </ul>
                 </div>
                 <h2 id="introduction"><a href="#introduction">Introduction</a></h2>
@@ -242,16 +250,23 @@ O(1)
                 <p>A delete operation is necessarily more complex than insert on binary search trees, since deletions can also occur in a node with branches. Implementations of this operation for generic binary search trees are omitted for brevity and not used by other code of this paper.</p>
                 <h2 id="evaluating-tree-balance"><a href="#evaluating-tree-balance">Evaluating tree balance</a></h2>
                 <p>Basic operations on binary trees have worst-case time bounds proportional to the height of the tree, defined as the distance between the root node and the deepest node of the tree.</p>
-                <p><em>Lemma:</em> A perfectly balanced binary tree of height <span class="math">\(h\)</span> has size <span class="math">\(2^{h}-1\)</span>.</p>
-                <p><em>Proof:</em> Let <span class="math">\(\size_{\text{t}}(h)\)</span> be the size of a perfect binary tree of height <span class="math">\(h\)</span>.</p>
-                <p><span class="math">\[
+                <section>
+                    <em class="proofpart">Lemma:</em>
+                    <span>A perfectly balanced binary tree of height </span>
+                    <span class="math">\(h\)</span> has size <span class="math">\(2^{h}-1\)</span>.</section>
+                <section>
+                    <em class="proofpart">Proof:</em>
+                    <p>Let <span class="math">\(\size_{\text{t}}(h)\)</span> be the size of a perfect binary tree of height <span class="math">\(h\)</span>.</p>
+                    <p><span class="math">\[
 \begin{eqnarray}
 \size_{\text{t}}(1) &amp; = &amp; 1\\
 \size_{\text{t}}(n) &amp; = &amp; \size_{\text{t}}(n-1)+2^{n-1}\\
 \size_{\text{t}}(n) &amp; = &amp; \sum_{x=1}^{n}2^{n-1}=1\frac{1-2^{n}}{1-2}=2^{n}-1
 \end{eqnarray}
 \]</span></p>
-                <p><em>Lemma:</em> The height of a perfectly balanced binary tree of size s is <span class="math">\(\height_{\text{t}}(s)=\log_{2}(s+1)\)</span> for <span class="math">\((s+1)\in\left\{ x^{2}\mid x\in\mathbb{N}\right\} \)</span>. For arbitrary sizes, rounding up the result is necessary:</p>
+                    <p> The height of a perfectly balanced binary tree of size s is <span class="math">\(\height_{\text{t}}(s)=\log_{2}(s+1)\)</span> for <span class="math">\((s+1)\in\left\{ x^{2}\mid x\in\mathbb{N}\right\} \)</span>. For arbitrary sizes, rounding up the result is necessary:</p>
+                    <p class="proofpart proofend">∎</p>
+                </section>
                 <p><span class="math">\[
 \begin{equation}
 \height_{\text{t}}(s)=\left\lceil \log_{2}(s+1)\right\rceil \in\mathbb{N}
@@ -283,7 +298,7 @@ O(1)
 \]</span></p>
                 <p>In this definition, the operator <span class="math">\(\oplus\)</span> returns the maximum of the two operands.</p>
                 <h1 id="functional-splay-trees"><a href="#functional-splay-trees">Functional splay trees</a></h1>
-                <p>Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties {[}SELFADJ{]}:</p>
+                <p>Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties (Sleator and Tarjan, 1985)</p>
                 <ul>
                     <li>bringing to the top the target node</li>
                     <li>reduce the height of the tree along the path to the target node</li>
@@ -398,7 +413,7 @@ O(1)
 \end{aligned}
 \end{align}
 \]</span></p>
-                <p>In the original paper for splay trees {[}selfadj{]}, basic set operations are constructed by first embedding the splay operation into each access/join/split operation, then defining insert and delete in terms of split and join. While conceptually simple, this has the drawback, for the delete operation, that two distinct splay operations would be performed.</p>
+                <p>In the original paper for splay trees (Sleator and Tarjan, 1985:662), basic set operations are constructed by first embedding the splay operation into each access/join/split operation, then defining insert and delete in terms of split and join. While conceptually simple, this has the drawback, for the delete operation, that two distinct splay operations would be performed.</p>
                 <p><span class="math leCode">\[
 \begin{align}
  &amp; \begin{aligned} &amp; \delete_{\splayop}(\emptytup_{\gentree},x) &amp;  &amp; \to\emptytup\\
@@ -443,49 +458,63 @@ ode_{l},t,f)
 \]
 </span></p>
                 <h2 id="analysis-of-the-splay-operation"><a href="#analysis-of-the-splay-operation">Analysis of the splay operation</a></h2>
-                <p><em>Lemma:</em> The maximum height increase of a tree after a suitably designed splay operation is constant.</p>
-                <p><span class="math">\[
+                <section>
+                    <em class="proofpart">Lemma:</em>
+                    <span>The maximum height increase of a tree after a suitably designed splay operation is constant.</span>
+                    <p><span class="math">\[
 \forall x\in\gentree\colon(\height(\splay(x))-\height(x))\oplus0=O(1)
 \]</span></p>
-                <p><em>Proof:</em> Splaying the empty tree results in an empty tree, with no height change.</p>
-                <p>For non-empty trees, we analize the behaviour of the previously provided splaying algorithm. In this implementation the splaying operation can be subdivided into a descending phase, and an assembling phase.</p>
-                <p>The descending phase starts with the tree to splay and two lists of trees initially empty, each representing one half of a finger structure. During each step of the descending phase, if the node to bring to the top is not the one being visited, the subtree more distant to the target node is added to the the corresponding list in the finger structure. When the node to bring to the top is visited, a new tree is assembled, by first assembling each of the lists of trees in each side into a tree, and then adding the resulting trees as subtrees of the top node. Therefore, the resulting tree has an height of one plus the maximum height of the subtrees assembled from the lists in the finger structure. Thus proving that the height of the assembled subtree can at most increase by a constant compared to the original tree, is equivalent to proving this lemma.</p>
-                <p>Let <span class="math">\(m\in\mathbb{N}\)</span> be the height of the tree before the splay operation, and <span class="math">\(n\in\mathbb{N}\)</span> the number of descend steps during the splay operation. The maximum possible heights of subtrees added to any of the lists during descend steps can then be described by the sequence <span class="math">\(\left\langle m-1,m-2,\ldots,m-n\right\rangle \)</span>, of which the heights of subtrees added to one of the two lists are a subsequence, with the form <span class="math">\(\left\langle m-n_{1},m-n_{2},\ldots,m-n_{s}\right\rangle \)</span>, where <span class="math">\(n_{x}+1\le n{}_{x+1}\)</span> and <span class="math">\(s\)</span> is the size of the subsequence. It may be noted that <span class="math">\(n_{x}\ge x\)</span></p>
-                <p>During the assembling phase, the subtrees are assembled back in reverse order, starting from the last node, also the one with the minimum of the maximum possible heights of the subtrees.</p>
-                <p>According to the build algorithm defined in (2.21) the maximum height <span class="math">\(\height_{m}\)</span> of a tree assembled from such a subsequence is defined recursively by:</p>
-                <p><span class="math">\[
+                </section>
+                <section>
+                    <em class="proofpart">Proof:</em>
+                    <span>Splaying the empty tree results in an empty tree, with no height change.</span>
+                    <p>For non-empty trees, we analize the behaviour of the previously provided splaying algorithm. In this implementation the splaying operation can be subdivided into a descending phase, and an assembling phase.</p>
+                    <p>The descending phase starts with the tree to splay and two lists of trees initially empty, each representing one half of a finger structure. During each step of the descending phase, if the node to bring to the top is not the one being visited, the subtree more distant to the target node is added to the the corresponding list in the finger structure. When the node to bring to the top is visited, a new tree is assembled, by first assembling each of the lists of trees in each side into a tree, and then adding the resulting trees as subtrees of the top node. Therefore, the resulting tree has an height of one plus the maximum height of the subtrees assembled from the lists in the finger structure. Thus proving that the height of the assembled subtree can at most increase by a constant compared to the original tree, is equivalent to proving this lemma.</p>
+                    <p>Let <span class="math">\(m\in\mathbb{N}\)</span> be the height of the tree before the splay operation, and <span class="math">\(n\in\mathbb{N}\)</span> the number of descend steps during the splay operation. The maximum possible heights of subtrees added to any of the lists during descend steps can then be described by the sequence <span class="math">\(\left\langle m-1,m-2,\ldots,m-n\right\rangle \)</span>, of which the heights of subtrees added to one of the two lists are a subsequence, with the form <span class="math">\(\left\langle m-n_{1},m-n_{2},\ldots,m-n_{s}\right\rangle \)</span>, where <span class="math">\(n_{x}+1\le n{}_{x+1}\)</span> and <span class="math">\(s\)</span> is the size of the subsequence. It may be noted that <span class="math">\(n_{x}\ge x\)</span></p>
+                    <p>During the assembling phase, the subtrees are assembled back in reverse order, starting from the last node, also the one with the minimum of the maximum possible heights of the subtrees.</p>
+                    <p>According to the build algorithm defined in (2.21) the maximum height <span class="math">\(\height_{m}\)</span> of a tree assembled from such a subsequence is defined recursively by:</p>
+                    <p><span class="math">\[
 \begin{eqnarray*}
  &amp;  &amp; \height_{m}(a,b,c,d\ldots)=\height_{m}(a\boxplus(b\boxplus c),d...)\\
  &amp;  &amp; \height_{m}(a,b)=a\boxplus b\\
  &amp;  &amp; \height_{m}(a)=a
  \end{eqnarray*}
 \]</span></p>
-                <p>with <span class="math">\(a\boxplus b=(a\oplus b)+1\)</span> and <span class="math">\(a\oplus b=\max(a,b)\)</span>.</p>
-                <p>It is possible to distribute additions of positive values, over the maximum operator:</p>
-                <p><span class="math">\((a\oplus b)+n=(a+n)\oplus(b+n)\)</span> for <span class="math">\(n\in\mathbb{N}\)</span></p>
-                <p>By recursively applying the <span class="math">\(n\in\mathbb{N}\)</span> function and distributing additions, if s is odd, one obtains:</p>
-                <p><span class="math">\[
+                    <p>with <span class="math">\(a\boxplus b=(a\oplus b)+1\)</span> and <span class="math">\(a\oplus b=\max(a,b)\)</span>.</p>
+                    <p>It is possible to distribute additions of positive values, over the maximum operator:</p>
+                    <p><span class="math">\((a\oplus b)+n=(a+n)\oplus(b+n)\)</span> for <span class="math">\(n\in\mathbb{N}\)</span></p>
+                    <p>By recursively applying the <span class="math">\(n\in\mathbb{N}\)</span> function and distributing additions, if s is odd, one obtains:</p>
+                    <p><span class="math">\[
 \height_{m}(x_{s},\ldots,x_{2},x_{1})=(x_{s}+\frac{s-1}{2})\oplus\ldots\oplus(x_{4}+3)\oplus(x_{3}+3)\oplus(x_{2}+2)\oplus(x_{1}+2)
 \]</span></p>
-                <p>Substituting <span class="math">\(x_{y}\to m-n_{y}\)</span> <span class="math">\[
+                    <p>Substituting <span class="math">\(x_{y}\to m-n_{y}\)</span> <span class="math">\[
 \begin{eqnarray*}
 \text{} &amp;  &amp; \height_{m}(x_{s},\ldots,x_{2},x_{1})=\\
  &amp;  &amp; =(m-n_{s}+\frac{s-1}{2}\oplus\ldots\oplus(m-n_{4}+3)\oplus(m-n_{3}+3)\oplus(m-n_{2}+2)\oplus(m-n_{1}+2)
 \end{eqnarray*}
 \]</span></p>
-                <p>Given that <span class="math">\(n_{x}\ge x\)</span>, the maximum possible of these terms is the last one <span class="math">\((m-n_{1}+2)\)</span>. By assuming the minimum value for <span class="math">\(n_{1}\)</span>, one obtains that the maximum possible height of the assembled subtree is <span class="math">\(m+1\)</span>.</p>
-                <p>If s is even: <span class="math">\[
+                    <p>Given that <span class="math">\(n_{x}\ge x\)</span>, the maximum possible of these terms is the last one <span class="math">\((m-n_{1}+2)\)</span>. By assuming the minimum value for <span class="math">\(n_{1}\)</span>, one obtains that the maximum possible height of the assembled subtree is <span class="math">\(m+1\)</span>.</p>
+                    <p>If s is even: <span class="math">\[
 \begin{eqnarray*}
 \text{} &amp;  &amp; \height_{m}(x_{s},\ldots,x_{2},x_{1})=(x_{s}+\frac{s}{2})\oplus\ldots\oplus(x_{3}+3)\oplus(x_{2}+3)\oplus(x_{1}+1)
 \end{eqnarray*}
 \]</span></p>
-                <p>In this case the term with the maximum possible value is <span class="math">\((x_{2}+3)\)</span>. By applying the same steps as above, one similarly obtains that the maximum possible height for the assembled subtree is <span class="math">\(m+1\)</span>.</p>
-                <p>The maximum possible height increase of a tree after the splay operation defined in (2.19) is 2.</p>
-                <p><em>Lemma:</em> It is possible to design basic operations on splay trees whose maximum height increase is constant. Basic operations on splay trees considered in this lemma are lookup, insert and delete.</p>
-                <p><em>Proof:</em> The maximum height increase after a suitably designed splay operation is constant.</p>
-                <p>The height increase after a basic binary tree lookup is zero.</p>
-                <p>The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth.</p>
-                <p>Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant.</p>
+                    <p>In this case the term with the maximum possible value is <span class="math">\((x_{2}+3)\)</span>. By applying the same steps as above, one similarly obtains that the maximum possible height for the assembled subtree is <span class="math">\(m+1\)</span>.</p>
+                    <p>The maximum possible height increase of a tree after the splay operation defined in (2.19) is 2.</p>
+                    <p class="proofpart proofend">∎</p>
+                </section>
+                <section>
+                    <em class="proofpart">Lemma:</em>
+                    <span>It is possible to design basic operations on splay trees whose maximum height increase is constant. Basic operations on splay trees considered in this lemma are lookup, insert and delete.</span>
+                </section>
+                <section>
+                    <em class="proofpart">Proof:</em>
+                    <p>The maximum height increase after a suitably designed splay operation is constant.</p>
+                    <p>The height increase after a basic binary tree lookup is zero.</p>
+                    <p>The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth.</p>
+                    <p>Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant.</p>
+                    <p class="proofpart proofend">∎</p>
+                </section>
                 <h1 id="a-monolithic-rebalancing-function"><a href="#a-monolithic-rebalancing-function">A monolithic rebalancing function</a></h1>
                 <p>The <span class="math">\(\massage\)</span> function described here requires that tree nodes are annotated with balance information. When the balancedness of the tree falls below a defined threshold, <span class="math">\(\balancedness_{\massage}\)</span>, the massage function descends the tree along the deepest path and reassembles it to reduces its height by a constant factor. This height reduction is analogous to the <span class="math">\(\splay\)</span> operation and is the main rebalancing operation of massage trees.</p>
                 <p>The full massage operation is <span class="math">\(O(\log n)\)</span>, but when <span class="math">\(\balancedness_{\massage}\)</span> is sufficiently small it occurs every <span class="math">\((rk)^{-1}\log n\)</span> operations, where <span class="math">\(n\)</span> is the size of the tree, <span class="math">\(r\)</span> is the height reduction constant and <span class="math">\(k\)</span> is the maximum height increase after each operation. The amortized time complexity of the massage operation is then <span class="math">\(O(rk\log n/\log n)=O(1)\)</span>. </p>
@@ -545,6 +574,9 @@ c\\
 \]</span></p>
                 <p>The freedom in the order execution of the splay and massage operations, allows embedding the rebalancing operation into the splay operation.</p>
                 <h1 id="experimental-results"><a href="#experimental-results">Experimental results</a></h1>
+                <p>
+                    <em>Section to be expanded...</em>
+                </p>
                 <h1 id="applications"><a href="#applications">Applications</a></h1>
                 <h2 id="queues"><a href="#queues">Queues</a></h2>
                 <p>Queue operations can be defined efficiently on massage trees: </p>
@@ -572,22 +604,29 @@ c\\
                 <h2 id="dynamic-arrays"><a href="#dynamic-arrays">Dynamic arrays</a></h2>
                 <p>Massage trees can be used to implement dynamic arrays efficently.</p>
                 <p>The split operation is implemented as a variant of the splay operation.</p>
-                <h2 id="linked-list"><a href="#linked-list">Linked-list</a></h2>
+                <h2 id="linked-lists"><a href="#linked-lists">Linked-lists</a></h2>
                 <p>Massage trees support linked-list operations.</p>
                 <h2 id="ropes"><a href="#ropes">Ropes</a></h2>
-                <p>Massage trees make it possible to implement a functional alternative to gap buffers.</p>
+                <p>Massage trees make it possible to implement a functional alternative to gap buffers; with additional advantages:</p>
+                <ul>
+                    <li>performance never degrades to linear for any operations or worst cases</li>
+                    <li>straightforward support of versioning and undo</li>
+                </ul>
                 <h1 id="conclusions"><a href="#conclusions">Conclusions</a></h1>
                 <p>Massage Trees:<ul>
                         <li>extend the applications of self-adjusting trees to areas initially covered only by balanced trees.</li>
                         <li>extend the applications of balanced trees to areas so far only covered by ad-hoc structures, like queues, lists or stacks.</li>
                     </ul>
                 </p>
-                <p>Data-structure implemented by massage trees can adapt interactively to different usage patterns.</p>
-                <h1 id="appendix"><a href="#appendix">Appendix</a></h1>
-                <h1 id="terminology"><a href="#terminology">Terminology</a></h1>
-                <ul>
-                    <li><em>Binary search tree</em> - an ordered binary tree, without duplicate nodes</li>
-                </ul>
+                <p>Data-structures implemented by massage trees adapt interactively to different usage patterns, reducing or eliminating the need to transform the data into specialized structures for efficient processing:<ul>
+                        <li>logarithmic worst-case time bounds for all operations</li>
+                        <li>amortized constant times for focal operations</li>
+                    </ul>
+                </p>
+                <h1 id="literature-cited">Literature Cited</h1>
+                <p>Daniel Dominic Sleator and Robert Endre Tarjan, 1985. Self-Adjusting Binary Search Trees.
+AT&T Bell Laboratories, Murray Hill, NJ; Journal of the Association for Computing Machinery. Vol. 32, No. 3, July 1985, pp. 652-686.
+</p>
             </div>
         </div>
     </body>
