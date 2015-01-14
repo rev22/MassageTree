@@ -403,17 +403,15 @@ require('html2cup').modApply ->
                 @_ ", but when "
                 @span class:"math", -> @_ "\\(\\balancedness_{\\massage}\\)"
                 @_ " is sufficiently small it occurs every "
-                @span class:"math", -> @_ "\\((rk)^{-1}\\log n\\)"
+                @span class:"math", -> @_ "\\(k\\log n\\)"
                 @_ " operations, where "
                 @span class:"math", -> @_ "\\(n\\)"
-                @_ " is the size of the tree, "
-                @span class:"math", -> @_ "\\(r\\)"
-                @_ " is the height reduction constant and "
+                @_ " is the size of the tree and "
                 @span class:"math", -> @_ "\\(k\\)"
-                @_ " is the maximum height increase after each operation. The amortized time complexity of the massage operation is then "
-                @span class:"math", -> @_ "\\(O(rk\\log n/\\log n)=O(1)\\)"
+                @_ " is a constant determined by the exact algorithm used. The amortized time complexity of the massage operation is then "
+                @span class:"math", -> @_ "\\(O(1)\\)"
                 @_ ". "
-            leCode caption: 'Implementation of an incremental rebalancing operation for splay trees', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\massage(\\emptytup_{\\baltree})\\to\\emptytup_{\\baltree}\\\\\n &amp; \\massage(t)\\to\\\\\n &amp; \\indent\\balancedness(t)&lt;\\balancedness_{\\massage}\\Rightarrow\\massage_{a}(t)\\\\\n &amp; \\indent\\balancedness(t)\\ge\\balancedness_{\\massage}\\Rightarrow t\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{a}(\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\nc\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\node(l,m,\\massage_{b}(r))\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\node(\\massage_{b}(l),m,r)\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{b}(t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\massage_{r}(t, &amp; \\left\\langle l_{l},m_{r},r_{r}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle \\left\\langle l,m,l_{r}\\right\\rangle _{\\baltree},m_{r},r_{r}\\right\\rangle _{\\baltree})\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\massage_{l}(t, &amp; \\left\\langle l_{l},m_{l},r_{l}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle l_{l},m_{l},\\left\\langle r_{l},m,r\\right\\rangle _{\\baltree}\\right\\rangle _{\\baltree})\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{l}(t\\equiv\\left\\langle \\emptytup_{\\baltree},m,r\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{l}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(l));\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{r}(t\\equiv\\left\\langle l,m,\\emptytup_{\\baltree}\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{r}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(r));\n\\end{aligned}\n\\end{align}\n\\]"
+            leCode caption: 'Implementation of an incremental rebalancing operation for splay trees', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\massage(\\emptytup_{\\baltree})\\to\\emptytup_{\\baltree}\\\\\n &amp; \\massage(t)\\to\\\\\n &amp; \\indent\\balancedness(t)&lt;\\balancedness_{\\massage}\\Rightarrow\\massage_{a}(t)\\\\\n &amp; \\indent\\balancedness(t)\\ge\\balancedness_{\\massage}\\Rightarrow t\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{a}(\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\nc\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\node(l,m,\\massage_{b}(r))\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\node(\\massage_{b}(l),m,r)\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{b}(t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\massage_{r}(t, &amp; \\left\\langle l_{r},m_{r},r_{r}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle \\left\\langle l,m,l_{r}\\right\\rangle _{\\baltree},m_{r},r_{r}\\right\\rangle _{\\baltree})\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\massage_{l}(t, &amp; \\left\\langle l_{l},m_{l},r_{l}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle l_{l},m_{l},\\left\\langle r_{l},m,r\\right\\rangle _{\\baltree}\\right\\rangle _{\\baltree})\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{l}(t\\equiv\\left\\langle \\emptytup_{\\baltree},m,r\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{l}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(l));\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{r}(t\\equiv\\left\\langle l,m,\\emptytup_{\\baltree}\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{r}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(r));\n\\end{aligned}\n\\end{align}\n\\]"
             @h2 id:"operations-on-massage-trees", ->
                 @S().a href:"#operations-on-massage-trees", -> @_ "Operations on massage trees"
             @p ->
@@ -429,6 +427,25 @@ require('html2cup').modApply ->
             @p -> @_ "The freedom in the order execution of the splay and massage operations, allows embedding the rebalancing operation into the splay operation."
             @h1 id:"experimental-results", ->
                 @S().a href:"#experimental-results", -> @_ "Experimental results"
+
+                # Implementations:
+                # - basic binary tree
+                # - red-black tree (stock?)
+                # - naive splay tree ?
+                # - top-down splay tree
+                # - new functional splay tree
+                # - reference massage tree
+                # - blendsply tree
+
+                # Tests
+                # - sorting
+                # - queue operations
+
+                # * 
+                # - Amortized performance comparison
+                # - Amortized complexity
+                # - Peak per-operation complexity
+                
             @p -> @em "Section to be expanded..."
             @h1 id:"applications", ->
                 @S().a href:"#applications", -> @_ "Applications"

@@ -573,7 +573,7 @@ ode_{l},t,f)
                 </section>
                 <h1 id="massage-operation"><a href="#massage-operation">Incrementally rebalancing a splay tree: the massage operation</a></h1>
                 <p>The <span class="math">\(\massage\)</span> function described here requires that tree nodes are annotated with balance information. When the balancedness of the tree falls below a defined threshold, <span class="math">\(\balancedness_{\massage}\)</span>, the massage function descends the tree along the deepest path and reassembles it to reduces its height by a constant factor. This height reduction is analogous to the <span class="math">\(\splay\)</span> operation and is the main rebalancing operation of massage trees.</p>
-                <p>The full massage operation is <span class="math">\(O(\log n)\)</span>, but when <span class="math">\(\balancedness_{\massage}\)</span> is sufficiently small it occurs every <span class="math">\((rk)^{-1}\log n\)</span> operations, where <span class="math">\(n\)</span> is the size of the tree, <span class="math">\(r\)</span> is the height reduction constant and <span class="math">\(k\)</span> is the maximum height increase after each operation. The amortized time complexity of the massage operation is then <span class="math">\(O(rk\log n/\log n)=O(1)\)</span>. </p>
+                <p>The full massage operation is <span class="math">\(O(\log n)\)</span>, but when <span class="math">\(\balancedness_{\massage}\)</span> is sufficiently small it occurs every <span class="math">\(k\log n\)</span> operations, where <span class="math">\(n\)</span> is the size of the tree and <span class="math">\(k\)</span> is a constant determined by the exact algorithm used. The amortized time complexity of the massage operation is then <span class="math">\(O(1)\)</span>. </p>
                 <p>
                     <div class="le-code-cont">
                         <div class="leCode math">\[
@@ -594,7 +594,7 @@ c\\
 \\
  &amp; \begin{aligned} &amp; \massage_{b}(t\equiv\left\langle l,m,r\right\rangle _{\baltree})\to\end{aligned}
 \\
- &amp; \begin{aligned} &amp; \indent\height(l)&lt;\height(r)\Rightarrow\massage_{r}(t, &amp; \left\langle l_{l},m_{r},r_{r}\right\rangle _{\baltree} &amp; \mapsto\left\langle \left\langle l,m,l_{r}\right\rangle _{\baltree},m_{r},r_{r}\right\rangle _{\baltree})\\
+ &amp; \begin{aligned} &amp; \indent\height(l)&lt;\height(r)\Rightarrow\massage_{r}(t, &amp; \left\langle l_{r},m_{r},r_{r}\right\rangle _{\baltree} &amp; \mapsto\left\langle \left\langle l,m,l_{r}\right\rangle _{\baltree},m_{r},r_{r}\right\rangle _{\baltree})\\
  &amp; \indent\height(l)\ge\height(r)\Rightarrow\massage_{l}(t, &amp; \left\langle l_{l},m_{l},r_{l}\right\rangle _{\baltree} &amp; \mapsto\left\langle l_{l},m_{l},\left\langle r_{l},m,r\right\rangle _{\baltree}\right\rangle _{\baltree})
 \end{aligned}
 \\
