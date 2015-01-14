@@ -5,9 +5,13 @@ bibliography =
     Daniel Dominic Sleator and Robert Endre Tarjan
     AT&T Bell Laboratories, Murray Hill, NJ
     
-  
+
 require('html2cup').modApply ->
-    leCode = (x)=> @p -> @S().span class:"math leCode", -> @_ x
+    leCode = ({ code, caption })=>
+      @p ->
+        @div class:"le-code-cont", ->
+          @div class:"leCode math", -> @_ code
+          @div class:"caption", caption if caption?
     proof = (x)=>
       @section ->
           @em class:"proofpart", "Proof:"
@@ -29,7 +33,10 @@ require('html2cup').modApply ->
             @style type:"text/css", -> @_ 
                 ''''
                 code { white-space: pre; }
-                body, html { background: white; }
+                body, html {
+                  background: white;
+                }
+                /* p, h1, h2, h3, h5 { font-family: Times, times, serif; } */
                 h1, h2, h3, h4, h5, a { color: black; text-decoration: none; }
                 h1, h2, h3, h4, h5, p, .proofpart { padding: 0.5em; margin: 0.5em; }
                 table.pure-table { padding: 2.0em; margin: 2.0em; }
@@ -38,12 +45,26 @@ require('html2cup').modApply ->
                   /* background: #ffc; */
                   border: 1px dashed grey;
                   padding: 0.5em;
+                  margin: 0.2em;
+                }
+                .le-code-cont > .caption {
+                  text-align:center;
+                  width:100%;
+                  font-size:75%;
+                }
+                .le-code-cont {
+                  /* margin: 0.8em 0; */
+                  margin: 0;
+                }
+                .le-code-cont .MathJax_Display {
+                  margin: 0.2em 0;
                 }
                 .proofpart {
+                  font-variant: small-caps;
                   padding-left: 1em;
                 }
                 .proofend {
-                  font-size: 150;
+                  font-size: 110%;
                   font-weight: bold;
                   padding-bottom: 2em;
                 }
@@ -51,7 +72,7 @@ require('html2cup').modApply ->
         @body ->
          @div class:"pure-g", ->
           @div class:"pure-u-1", ->
-            @p -> @em -> @_ "Michele Bini <michele.bini@gmail.com>, 2014-02-22; last draft: 2015-01-13"
+            @p -> @em -> @_ "Michele Bini <michele.bini@gmail.com>, 2014-02-22; last draft: 2015-01-14"
             @p -> @_ "The self-adjusting property of splay trees is combined with a self-balancing property, thereby improving the worst-case complexity of basic operations from linear to logarithmic to the size of the tree. The resulting persistent data structures can be used to efficiently and adaptively simulate other specialized data structures."
             @p -> @_ "Keywords: self-balancing trees, self-adjusting"
             @div id:"TOC", ->
@@ -75,7 +96,7 @@ require('html2cup').modApply ->
                             @li ->
                                 @a href:"#analysis-of-the-splay-operation", -> @_ "Analysis of the splay operation"
                     @li ->
-                        @a href:"#a-monolithic-rebalancing-function", -> @_ "A monolithic rebalancing function"
+                        @a href:"#massage-operation", -> @_ "Incrementally rebalancing a splay tree: the massage operation"
                         @ul ->
                             @li ->
                                 @a href:"#operations-on-massage-trees", -> @_ "Operations on massage trees"
@@ -142,7 +163,7 @@ require('html2cup').modApply ->
                 @a href:"#basic-theories-and-techniques", -> @_ "Basic theories and techniques"
             @h2 id:"functional-set-operations", ->
                 @a href:"#functional-set-operations", -> @_ "Functional set operations"
-            @div style:"height:0;max-height:0;padding:0;margin:0;border:0;overflow:hidden", -> leCode "\\[\n\\newcommand{\\lincell}{\\cellcolor{gray2}\\text{linear}}\n\\newcommand{\\logcell}{\\cellcolor{gray1}\\text{logarithmic}}\n\\newcommand{\\concell}{\\text{constant}}\n\\newcommand{\\insert}{\\mathit{\\textbf{insert}}}\n\\newcommand{\\member}{\\textbf{member}}\n\\newcommand{\\concat}{\\textbf{concat}}\n\\newcommand{\\delete}{\\textbf{delete}}\n\\newcommand{\\queuepush}{\\mathit{\\textbf{push}}}\n\\newcommand{\\queuepop}{\\textbf{pop}}\n\\newcommand{\\seqfirst}{\\textbf{first}}\n\\newcommand{\\seqlast}{\\textbf{last}}\n\\newcommand{\\seqjoin}{\\textbf{join}}\n\\newcommand{\\seqsplit}{\\textbf{split}}\n\\newcommand{\\height}{\\textbf{h}}\n\\newcommand{\\size}{\\textbf{s}}\n\\newcommand{\\Tree}{\\mathsf{Tree}}\n\\newcommand{\\Measures}{\\mathsf{Measures}}\n\\newcommand{\\Height}{\\mathsf{Height}}\n\\newcommand{\\node}{\\textbf{node}}\n\\newcommand{\\splay}{\\textbf{splay}}\n\\newcommand{\\massage}{\\textbf{massage}}\n\\newcommand{\\descend}{\\textbf{descend}}\n\\newcommand{\\compress}{\\textbf{pack}}\n\\newcommand{\\add}{\\textbf{add}}\n\\newcommand{\\build}{\\textbf{build}}\n\\newcommand{\\ascend}{\\textbf{ascend}}\n\\newcommand{\\loopy}{\\textbf{loop}}\n\\newcommand{\\true}{\\boldsymbol{\\top}}\n\\newcommand{\\false}{\\boldsymbol{\\bot}}\n\\newcommand{\\indent}{\\;\\;\\;\\;}\n\\newcommand{\\gentree}{\\textbf{G}}\n\\newcommand{\\baltree}{\\textbf{B}}\n\\newcommand{\\splayop}{\\textbf{Spl}}\n\\newcommand{\\genop}{\\textbf{Gen}}\n\\newcommand{\\massageop}{\\textbf{Mas}}\n\\newcommand{\\OrderedSet}{\\textbf{X}}\n\\newcommand{\\emptytup}{\\varnothing}\n\\newcommand{\\balancedness}{\\textbf{b}}\n\\newcommand{\\codedescription}[1]{\\mathit{#1}}\n\\]"
+            @div style:"height:0;max-height:0;padding:0;margin:0;border:0;overflow:hidden", -> leCode code: "\\[\n\\newcommand{\\lincell}{\\cellcolor{gray2}\\text{linear}}\n\\newcommand{\\logcell}{\\cellcolor{gray1}\\text{logarithmic}}\n\\newcommand{\\concell}{\\text{constant}}\n\\newcommand{\\insert}{\\mathit{\\textbf{insert}}}\n\\newcommand{\\member}{\\textbf{member}}\n\\newcommand{\\concat}{\\textbf{concat}}\n\\newcommand{\\delete}{\\textbf{delete}}\n\\newcommand{\\queuepush}{\\mathit{\\textbf{push}}}\n\\newcommand{\\queuepop}{\\textbf{pop}}\n\\newcommand{\\seqfirst}{\\textbf{first}}\n\\newcommand{\\seqlast}{\\textbf{last}}\n\\newcommand{\\seqjoin}{\\textbf{join}}\n\\newcommand{\\seqsplit}{\\textbf{split}}\n\\newcommand{\\height}{\\textbf{h}}\n\\newcommand{\\size}{\\textbf{s}}\n\\newcommand{\\Tree}{\\mathsf{Tree}}\n\\newcommand{\\Measures}{\\mathsf{Measures}}\n\\newcommand{\\Height}{\\mathsf{Height}}\n\\newcommand{\\node}{\\textbf{node}}\n\\newcommand{\\splay}{\\textbf{splay}}\n\\newcommand{\\massage}{\\textbf{massage}}\n\\newcommand{\\descend}{\\textbf{descend}}\n\\newcommand{\\compress}{\\textbf{pack}}\n\\newcommand{\\add}{\\textbf{add}}\n\\newcommand{\\build}{\\textbf{build}}\n\\newcommand{\\ascend}{\\textbf{ascend}}\n\\newcommand{\\loopy}{\\textbf{loop}}\n\\newcommand{\\true}{\\boldsymbol{\\top}}\n\\newcommand{\\false}{\\boldsymbol{\\bot}}\n\\newcommand{\\indent}{\\;\\;\\;\\;}\n\\newcommand{\\gentree}{\\textbf{G}}\n\\newcommand{\\baltree}{\\textbf{B}}\n\\newcommand{\\splayop}{\\textbf{Spl}}\n\\newcommand{\\genop}{\\textbf{Gen}}\n\\newcommand{\\massageop}{\\textbf{Mas}}\n\\newcommand{\\OrderedSet}{\\textbf{X}}\n\\newcommand{\\emptytup}{\\varnothing}\n\\newcommand{\\balancedness}{\\textbf{b}}\n\\newcommand{\\codedescription}[1]{\\mathit{#1}}\n\\]"
             @p ->
                 @_ "In the context of this paper, "
                 @span class:"math", -> @_ "\\(\\OrderedSet\\)"
@@ -161,7 +182,7 @@ require('html2cup').modApply ->
                 @_ " and "
                 @span class:"math", -> @_ "\\(\\insert\\)"
                 @_ " operations on a generic binary search tree:"
-            leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\gentree=\\left\\{ \\emptytup_{\\gentree},\\left\\langle l,x,r\\right\\rangle _{\\gentree}\\mid l,r\\in\\gentree\\land x\\in\\OrderedSet\\right\\} \\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\member(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\false\\\\\n &amp; \\member(\\left\\langle l,m,r\\right\\rangle _{\\gentree},x) &amp;  &amp; \\to\n\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m &amp;  &amp; \\Rightarrow\\member(l,x)\\\\\n &amp; \\indent x&gt;m &amp;  &amp; \\Rightarrow\\member(r,x)\\\\\n &amp; \\indent x=m &amp;  &amp; \\Rightarrow\\true\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\insert(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},x,\\emptytup_{\\gentree}\\right\\rangle _{\\gentree}\\\\\n &amp; \\insert(\\left\\langle l,m,r\\right\\rangle _{\\gentree},x) &amp;  &amp; \\to\n\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m &amp;  &amp; \\Rightarrow\\left\\langle \\insert(l,x),m,r\\right\\rangle _{\\gentree}\\\\\n &amp; \\indent x&gt;m &amp;  &amp; \\Rightarrow\\left\\langle l,m,\\insert(r,x)\\right\\rangle _{\\gentree}\\\\\n &amp; \\indent x=m &amp;  &amp; \\Rightarrow\\left\\langle l,x,r\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\end{align}\n\\]"
+            leCode caption: 'Implementation of basic set operations on a binary search tree', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\gentree=\\left\\{ \\emptytup_{\\gentree},\\left\\langle l,x,r\\right\\rangle _{\\gentree}\\mid l,r\\in\\gentree\\land x\\in\\OrderedSet\\right\\} \\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\member(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\false\\\\\n &amp; \\member(\\left\\langle l,m,r\\right\\rangle _{\\gentree},x) &amp;  &amp; \\to\n\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m &amp;  &amp; \\Rightarrow\\member(l,x)\\\\\n &amp; \\indent x&gt;m &amp;  &amp; \\Rightarrow\\member(r,x)\\\\\n &amp; \\indent x=m &amp;  &amp; \\Rightarrow\\true\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\insert(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},x,\\emptytup_{\\gentree}\\right\\rangle _{\\gentree}\\\\\n &amp; \\insert(\\left\\langle l,m,r\\right\\rangle _{\\gentree},x) &amp;  &amp; \\to\n\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m &amp;  &amp; \\Rightarrow\\left\\langle \\insert(l,x),m,r\\right\\rangle _{\\gentree}\\\\\n &amp; \\indent x&gt;m &amp;  &amp; \\Rightarrow\\left\\langle l,m,\\insert(r,x)\\right\\rangle _{\\gentree}\\\\\n &amp; \\indent x=m &amp;  &amp; \\Rightarrow\\left\\langle l,x,r\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\end{align}\n\\]"
             @p -> @_ "A delete operation is necessarily more complex than insert on binary search trees, since deletions can also occur in a node with branches. Implementations of this operation for generic binary search trees are omitted for brevity and not used by other code of this paper."
             @h2 id:"evaluating-tree-balance", ->
                 @S().a href:"#evaluating-tree-balance", -> @_ "Evaluating tree balance"
@@ -199,7 +220,7 @@ require('html2cup').modApply ->
                 @_ " can be defined as the ratio between the height for a balanced binary tree of the same size and the measured height of the tree. "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{align}\n\\balancedness(t) &amp; =\\frac{\\height_{\\text{t}}(\\size(t))}{\\height(t)}\\in\\{x\\mid x\\in\\mathbb{R}\\land0&lt;x\\le1\\}\n\\end{align}\n\\]"
             @p -> @_ "By annotating each node with the size and height of the corresponding subtree, it is possible to calculate the balancedness of trees in constant time. A smart constructor (2.18) can be defined to maintain the size and height annotations of the nodes."
-            leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\mathbf{\\baltree}=\\left\\{ \\emptytup_{\\baltree},\\left\\langle \\left\\langle h,s\\right\\rangle ,l,x,r\\right\\rangle _{\\baltree}\\mid h,s\\in\\mathbb{N}\\land l,r\\in\\mathbf{\\baltree}\\land x\\in\\OrderedSet\\right\\} \\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\size(\\emptytup_{\\baltree}) &amp;  &amp; \\to0\\\\\n &amp; \\size\\left\\langle \\left\\langle \\_,s\\right\\rangle ,\\_,\\_,\\_\\right\\rangle _{\\baltree} &amp;  &amp; \\to s\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\height(\\emptytup_{\\baltree}) &amp;  &amp; \\to0\\\\\n &amp; \\height\\left\\langle \\left\\langle h,\\_\\right\\rangle ,\\_,\\_,\\_\\right\\rangle _{\\baltree} &amp;  &amp; \\to h\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\left\\langle l,m,r\\right\\rangle _{\\baltree}\\to\\left\\langle \\left\\langle \\height(l)\\oplus\\height(r)+1,\\size(l)+\\size(r)+1\\right\\rangle ,l,m,r\\right\\rangle _{\\baltree}\\end{aligned}\n\\end{align}\n\\]"
+            leCode caption: 'Implementation of height and size annotations for binary trees, with smart constructor', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\mathbf{\\baltree}=\\left\\{ \\emptytup_{\\baltree},\\left\\langle \\left\\langle h,s\\right\\rangle ,l,x,r\\right\\rangle _{\\baltree}\\mid h,s\\in\\mathbb{N}\\land l,r\\in\\mathbf{\\baltree}\\land x\\in\\OrderedSet\\right\\} \\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\size(\\emptytup_{\\baltree}) &amp;  &amp; \\to0\\\\\n &amp; \\size\\left\\langle \\left\\langle \\_,s\\right\\rangle ,\\_,\\_,\\_\\right\\rangle _{\\baltree} &amp;  &amp; \\to s\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\height(\\emptytup_{\\baltree}) &amp;  &amp; \\to0\\\\\n &amp; \\height\\left\\langle \\left\\langle h,\\_\\right\\rangle ,\\_,\\_,\\_\\right\\rangle _{\\baltree} &amp;  &amp; \\to h\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\left\\langle l,m,r\\right\\rangle _{\\baltree}\\to\\left\\langle \\left\\langle \\height(l)\\oplus\\height(r)+1,\\size(l)+\\size(r)+1\\right\\rangle ,l,m,r\\right\\rangle _{\\baltree}\\end{aligned}\n\\end{align}\n\\]"
             @p ->
                 @_ "In this definition, the operator "
                 @span class:"math", -> @_ "\\(\\oplus\\)"
@@ -213,27 +234,27 @@ require('html2cup').modApply ->
                 @li -> @_ "bringing to the top the target node"
                 @li -> @_ "reduce the height of the tree along the path to the target node"
             @p -> @_ "The novel algorithm presented here subdivides the splay operation into a descending (2.16) phase, which accumulates lists of trees on either side of the path to the target node, and an ascending (2.18) phase, during which the lists of trees are assembled into a pair of trees of reduced height and placed as subtreres on either side of the target node."
-            leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\splay(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\emptytup_{\\gentree}\\\\\n &amp; \\splay(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(m,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend(m,l,r,\\left\\langle l_{f,},r_{f}\\right\\rangle )\\to\\\\\n &amp; \\indent\\left\\langle \\build(\\node_{l},l,l_{f}),m,\\build(\\node_{r},r,r_{f})\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\add_{r}(m,r,\\left\\langle f_{l},f_{r}\\right\\rangle )\\to\\left\\langle f_{l},\\left[\\left\\langle m,r\\right\\rangle ,f_{r}\\dots\\right]\\right\\rangle \\\\\n &amp; \\add_{l}(m,l,\\left\\langle f_{l},f_{r}\\right\\rangle )\\to\\left\\langle \\left[\\left\\langle m,l\\right\\rangle ,f_{l}\\dots\\right],f_{r}\\right\\rangle \n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\node_{r}(l,m,r)\\to\\left\\langle l,m,r\\right\\rangle _{\\gentree}\\\\\n &amp; \\node_{l}(r,m,l)\\to\\left\\langle l,m,r\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\build(n,t,\\left[\\left\\langle v_{a},t_{a}\\right\\rangle ,\\left\\langle v_{b},t_{b}\\right\\rangle ,f\\dots\\right])\\to\\build(n,n(t,v_{a},n(t_{a},v_{b},t_{b}),f))\\\\\n &amp; \\build(n,t,\\left[\\left\\langle v_{a},t_{a}\\right\\rangle \\right])\\to n(t,v_{a},t_{a})\\\\\n &amp; \\build(n,t,\\left[\\right])\\to t\n\\end{aligned}\n\\end{align}\n\\]"
+            leCode caption: 'implementation of a functional splay operation', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\splay(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\emptytup_{\\gentree}\\\\\n &amp; \\splay(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(m,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend(m,l,r,\\left\\langle l_{f,},r_{f}\\right\\rangle )\\to\\\\\n &amp; \\indent\\left\\langle \\build(\\node_{l},l,l_{f}),m,\\build(\\node_{r},r,r_{f})\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\add_{r}(m,r,\\left\\langle f_{l},f_{r}\\right\\rangle )\\to\\left\\langle f_{l},\\left[\\left\\langle m,r\\right\\rangle ,f_{r}\\dots\\right]\\right\\rangle \\\\\n &amp; \\add_{l}(m,l,\\left\\langle f_{l},f_{r}\\right\\rangle )\\to\\left\\langle \\left[\\left\\langle m,l\\right\\rangle ,f_{l}\\dots\\right],f_{r}\\right\\rangle \n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\node_{r}(l,m,r)\\to\\left\\langle l,m,r\\right\\rangle _{\\gentree}\\\\\n &amp; \\node_{l}(r,m,l)\\to\\left\\langle l,m,r\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\build(n,t,\\left[\\left\\langle v_{a},t_{a}\\right\\rangle ,\\left\\langle v_{b},t_{b}\\right\\rangle ,f\\dots\\right])\\to\\build(n,n(t,v_{a},n(t_{a},v_{b},t_{b}),f))\\\\\n &amp; \\build(n,t,\\left[\\left\\langle v_{a},t_{a}\\right\\rangle \\right])\\to n(t,v_{a},t_{a})\\\\\n &amp; \\build(n,t,\\left[\\right])\\to t\n\\end{aligned}\n\\end{align}\n\\]"
             @p -> @_ "This splay variant has been shown experimentally to be more performant than a top-down functional splaying algorithm, and has the additional advantages of a concise implementation and simpler analysis."
             @p -> @_ "The splay operation is typically performed before other basic operations to bring the target node to the top, and to optimize subsequent operations in the same locality of reference:"
-            leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(t,x)\\to(\\splay(t,x),\\member_{\\genop}(\\splay(t,x),x))\\\\\n &amp; \\indent t\\leftarrowtail\\splay(t,x)\\\\\n &amp; \\indent\\left\\langle t,\\member_{\\genop}(t,x)\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\splayop}(t,x)\\to\\insert_{\\genop}(\\splay(t,x),x)\\\\\n &amp; \\delete_{\\splayop}(t,x)\\to\\delete_{\\genop}(\\splay(t,x),x)\n\\end{aligned}\n\\end{align}\n\\]"
+            leCode code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(t,x)\\to(\\splay(t,x),\\member_{\\genop}(\\splay(t,x),x))\\\\\n &amp; \\indent t\\leftarrowtail\\splay(t,x)\\\\\n &amp; \\indent\\left\\langle t,\\member_{\\genop}(t,x)\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\splayop}(t,x)\\to\\insert_{\\genop}(\\splay(t,x),x)\\\\\n &amp; \\delete_{\\splayop}(t,x)\\to\\delete_{\\genop}(\\splay(t,x),x)\n\\end{aligned}\n\\end{align}\n\\]"
             @p ->
                 @_ "It is equivalently possible to perform the splay operation  the corresponding function for generic binary search tree: "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{cases}\n &amp; f_{1}(t,x)=\\splay(f_{\\genop}(t,x),x)\\\\\n &amp; f_{2}(t,x)=f_{\\genop}(\\splay(t,x),x)\n\\end{cases}\n\\end{equation}\n\\]"
             @h2 id:"integrated-splay-tree-operations", ->
                 @S().a href:"#integrated-splay-tree-operations", -> @_ "Integrated splay tree operations"
             @p -> @_ "For optimal performance of implementations of splay trees, it is adviced to embed the splay operation into the basic binary search tree operation."
-            leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},\\false\\right\\rangle \\\\\n &amp; \\member_{\\splayop}(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(\\true,m,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(\\false,m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend(v,x,l,r,\\left\\langle l_{f,},r_{f}\\right\\rangle )\\to\\\\\n &amp; \\indent\\left\\langle \\left\\langle \\build(\\node_{l},l,l_{f}),x,\\build(\\node_{r},r,r_{f})\\right\\rangle _{\\gentree},v\\right\\rangle \n\\end{aligned}\n\\end{align}\n\\]"
-            leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\insert_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},x,\\emptytup_{\\gentree}\\right\\rangle _{\\gentree}\\\\\n &amp; \\insert_{\\splayop}(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f))\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f))\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(x,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(x,\\emptytup_{\\gentree},f) &amp;  &amp; \\to\\ascend(x,\\emptytup_{\\gentree},\\emptytup_{\\gentree},f)\\\\\n &amp; \\descend^{\\prime}(x,t,f) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\end{align}\n\\]"
+            leCode caption: 'Implementation of a member+splay operation', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},\\false\\right\\rangle \\\\\n &amp; \\member_{\\splayop}(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(\\true,m,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(\\false,m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend(v,x,l,r,\\left\\langle l_{f,},r_{f}\\right\\rangle )\\to\\\\\n &amp; \\indent\\left\\langle \\left\\langle \\build(\\node_{l},l,l_{f}),x,\\build(\\node_{r},r,r_{f})\\right\\rangle _{\\gentree},v\\right\\rangle \n\\end{aligned}\n\\end{align}\n\\]"
+            leCode caption: 'Implementation of an insert+splay operation', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\insert_{\\splayop}(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\left\\langle \\emptytup_{\\gentree},x,\\emptytup_{\\gentree}\\right\\rangle _{\\gentree}\\\\\n &amp; \\insert_{\\splayop}(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f))\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f))\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(x,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(x,\\emptytup_{\\gentree},f) &amp;  &amp; \\to\\ascend(x,\\emptytup_{\\gentree},\\emptytup_{\\gentree},f)\\\\\n &amp; \\descend^{\\prime}(x,t,f) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\end{align}\n\\]"
             @p ->
               @_ "In the original paper for splay trees "
               @_ "(Sleator and Tarjan, 1985:662)" # ref 'selfadj'
               @_ ", basic set operations are constructed by first embedding the splay operation into each access/join/split operation, then defining insert and delete in terms of split and join. While conceptually simple, this has the drawback, for the delete operation, that two distinct splay operations would be performed."
-            leCode
+            leCode caption: 'Implementation of a delete+splay operation', code:
                   ''''
                   \[
                   \begin{align}
-                   &amp; \begin{aligned} &amp; \delete_{\splayop}(\emptytup_{\gentree},x) &amp;  &amp; \to\emptytup\\
+                   &amp; \begin{aligned} &amp; \delete_{\splayop}(\emptytup_{\gentree},x) &amp;  &amp; \to\emptytup_{\gentree}\\
                    &amp; \delete_{\splayop}(t\equiv\left\langle l,m,r\right\rangle _{\gentree},x) &amp;  &amp; \to\descend(x,t,\left\langle \left[\right],\left[\right]\right\rangle )
                   \end{aligned}
                   \\
@@ -355,8 +376,7 @@ require('html2cup').modApply ->
               @p -> @_ "The height increase after a basic binary tree lookup is zero."
               @p -> @_ "The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth."
               @p -> @_ "Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant."
-            @h1 id:"a-monolithic-rebalancing-function", ->
-                @S().a href:"#a-monolithic-rebalancing-function", -> @_ "A monolithic rebalancing function"
+            @h1 id:"massage-operation", -> @S().a href:"#massage-operation", -> @_ "Incrementally rebalancing a splay tree: the massage operation:"
             @p ->
                 @_ "The "
                 @span class:"math", -> @_ "\\(\\massage\\)"
@@ -381,7 +401,7 @@ require('html2cup').modApply ->
                 @_ " is the maximum height increase after each operation. The amortized time complexity of the massage operation is then "
                 @span class:"math", -> @_ "\\(O(rk\\log n/\\log n)=O(1)\\)"
                 @_ ". "
-            leCode "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\massage(\\emptytup_{\\baltree})\\to\\emptytup_{\\baltree}\\\\\n &amp; \\massage(t)\\to\\\\\n &amp; \\indent\\balancedness(t)&lt;\\balancedness_{\\massage}\\Rightarrow\\massage_{a}(t)\\\\\n &amp; \\indent\\balancedness(t)\\ge\\balancedness_{\\massage}\\Rightarrow t\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{a}(\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\nc\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\node(l,m,\\massage_{b}(r))\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\node(\\massage_{b}(l),m,r)\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{b}(t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\massage_{r}(t, &amp; \\left\\langle l_{l},m_{r},r_{r}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle \\left\\langle l,m,l_{r}\\right\\rangle _{\\baltree},m_{r},r_{r}\\right\\rangle _{\\baltree})\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\massage_{l}(t, &amp; \\left\\langle l_{l},m_{l},r_{l}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle l_{l},m_{l},\\left\\langle r_{l},m,r\\right\\rangle _{\\baltree}\\right\\rangle _{\\baltree})\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{l}(t\\equiv\\left\\langle \\emptytup_{\\baltree},m,r\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{l}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(l));\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{r}(t\\equiv\\left\\langle l,m,\\emptytup_{\\baltree}\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{r}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(r));\n\\end{aligned}\n\\end{align}\n\\]"
+            leCode caption: 'Implementation of an incremental rebalancing operation for splay trees', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\massage(\\emptytup_{\\baltree})\\to\\emptytup_{\\baltree}\\\\\n &amp; \\massage(t)\\to\\\\\n &amp; \\indent\\balancedness(t)&lt;\\balancedness_{\\massage}\\Rightarrow\\massage_{a}(t)\\\\\n &amp; \\indent\\balancedness(t)\\ge\\balancedness_{\\massage}\\Rightarrow t\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{a}(\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\nc\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\node(l,m,\\massage_{b}(r))\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\node(\\massage_{b}(l),m,r)\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{b}(t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\baltree})\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent\\height(l)&lt;\\height(r)\\Rightarrow\\massage_{r}(t, &amp; \\left\\langle l_{l},m_{r},r_{r}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle \\left\\langle l,m,l_{r}\\right\\rangle _{\\baltree},m_{r},r_{r}\\right\\rangle _{\\baltree})\\\\\n &amp; \\indent\\height(l)\\ge\\height(r)\\Rightarrow\\massage_{l}(t, &amp; \\left\\langle l_{l},m_{l},r_{l}\\right\\rangle _{\\baltree} &amp; \\mapsto\\left\\langle l_{l},m_{l},\\left\\langle r_{l},m,r\\right\\rangle _{\\baltree}\\right\\rangle _{\\baltree})\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\massage_{l}(t\\equiv\\left\\langle \\emptytup_{\\baltree},m,r\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{l}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(l));\n\\end{aligned}\n\\\\\n\\\\\n &amp; \\begin{aligned} &amp; \\massage_{r}(t\\equiv\\left\\langle l,m,\\emptytup_{\\baltree}\\right\\rangle _{\\baltree},x,f)\\to t\\\\\n &amp; \\massage_{r}(\\left\\langle l,m,r\\right\\rangle _{\\baltree},x,f)\\to f(\\massage_{a}(r));\n\\end{aligned}\n\\end{align}\n\\]"
             @h2 id:"operations-on-massage-trees", ->
                 @S().a href:"#operations-on-massage-trees", -> @_ "Operations on massage trees"
             @p ->
@@ -390,7 +410,7 @@ require('html2cup').modApply ->
                 @_ ", "
                 @span class:"math", -> @_ "\\(\\massage\\)"
                 @_ " is combined with each of the defined operations on splay trees: "
-            leCode "\\[\n\\begin{equation}\n\\begin{aligned} &amp; \\member_{\\massageop}(t,x)\\to\\\\\n &amp; \\indent\\left\\langle t,r\\right\\rangle \\leftarrowtail\\member_{\\splayop}(t,x)\\\\\n &amp; \\indent\\left\\langle \\massage(t),r\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\massageop}(t,x)\\to\\massage(\\insert_{\\splayop}(t,x))\\\\\n &amp; \\delete_{\\massageop}(t,x)\\to\\massage(\\delete_{\\splayop}(t,x))\n\\end{aligned}\n\\end{equation}\n\\]"
+            leCode code: "\\[\n\\begin{equation}\n\\begin{aligned} &amp; \\member_{\\massageop}(t,x)\\to\\\\\n &amp; \\indent\\left\\langle t,r\\right\\rangle \\leftarrowtail\\member_{\\splayop}(t,x)\\\\\n &amp; \\indent\\left\\langle \\massage(t),r\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\massageop}(t,x)\\to\\massage(\\insert_{\\splayop}(t,x))\\\\\n &amp; \\delete_{\\massageop}(t,x)\\to\\massage(\\delete_{\\splayop}(t,x))\n\\end{aligned}\n\\end{equation}\n\\]"
             @p ->
                 @_ "The massage operation may equivalently be performed  or  the corresponding function for splay trees: "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{cases}\n &amp; f_{1}(t,x)=\\massage(f_{\\splayop}(t,x))\\\\\n &amp; f_{2}(t,x)=f_{\\splayop}(\\massage(t),x)\n\\end{cases}\n\\end{equation}\n\\]"
@@ -404,17 +424,64 @@ require('html2cup').modApply ->
                 @S().a href:"#queues", -> @_ "Queues"
             @p ->
                 @_ "Queue operations can be defined efficiently on massage trees: "
-            leCode "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; \\splay_{\\seqfirst}(t)=\\splay(t,\\seqfirst(t))\\\\\n &amp; f_{s}(t,x)=\\massage(f_{s,\\genop}(\\splay_{\\seqfirst}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
+            leCode code: "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; \\splay_{\\seqfirst}(t)=\\splay(t,\\seqfirst(t))\\\\\n &amp; f_{s}(t,x)=\\massage(f_{s,\\genop}(\\splay_{\\seqfirst}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
             @h2 id:"deques", ->
                 @S().a href:"#deques", -> @_ "Deques"
             @p -> @_ "Similarly, deque operations can be defined on massage trees:"
-            leCode "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; s\\in\\left\\{ \\seqlast,\\seqfirst\\right\\} \\\\\n &amp; \\splay_{s}=(t)\\mapsto\\splay(t,s(t))\\\\\n &amp; \\splay_{\\seqfirst,\\seqlast}=\\splay_{\\seqfirst}\\cdot\\splay_{\\seqlast}\\\\\n &amp; f_{s}(t,x)\\to\\massage(f_{s,\\genop}(\\splay_{\\seqfirst,\\seqlast}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
+            leCode code: "\\[\n\\begin{align}\n\\begin{aligned} &amp; f\\in\\left\\{ \\queuepush,\\queuepop\\right\\} \\\\\n &amp; s\\in\\left\\{ \\seqlast,\\seqfirst\\right\\} \\\\\n &amp; \\splay_{s}=(t)\\mapsto\\splay(t,s(t))\\\\\n &amp; \\splay_{\\seqfirst,\\seqlast}=\\splay_{\\seqfirst}\\cdot\\splay_{\\seqlast}\\\\\n &amp; f_{s}(t,x)\\to\\massage(f_{s,\\genop}(\\splay_{\\seqfirst,\\seqlast}(t),x))\n\\end{aligned}\n\\end{align}\n\\]"
             @p ->
                 @_ "The "
                 @span class:"math", -> @_ "\\(\\splay_{\\seqfirst,\\seqlast}\\)"
                 @_ " operation splays both the first and the last node of the tree. This is necessary to make subsequent accesses to any of the ends of the deque constant-time."
             @h2 id:"dynamic-arrays", ->
                 @S().a href:"#dynamic-arrays", -> @_ "Dynamic arrays"
+            leCode caption:'Implementation of split and join operations for binary trees representing arrays', code:
+              ''''
+              \begin{align*}
+               & \begin{aligned} & \seqjoin_{\genop}(\emptytup_{\baltree},x)\to x\\
+               & \seqjoin_{\genop}(x,\emptytup_{\baltree})\to x\\
+               & \seqjoin_{\genop}(\left\langle \_,l_{a},m_{a},r_{a}\right\rangle _{\baltree}\equiv a,b\equiv\left\langle \_,l_{b},m_{b},r_{b}\right\rangle _{\baltree})\to\\
+               & \indent\size(a)<\size(b)\Rightarrow\node(\seqjoin_{\genop}(a,l_{b}),m_{b},r_{b})\\
+               & \indent\size(a)\ge\size(b)\Rightarrow\node(l_{a,}m_{a},\seqjoin_{\genop}(r_{a},b))\\
+              \\
+              \end{aligned}
+              \\
+               & \begin{aligned} & \seqjoin(\emptytup_{\baltree},x)\to x\\
+               & \seqjoin(x,\emptytup_{\baltree})\to x\\
+               & \seqjoin(a,b)\to\\
+               & \indent\massage(\seqjoin_{\genop}(\splay_{\seqlast}(a),\splay_{\seqfirst}(b)))
+              \end{aligned}
+              \\
+              \\
+               & \begin{aligned} & \seqsplit(t,n)\to\begin{split}\end{split}
+              \\
+               & \indent\left\langle a,b\right\rangle \leftarrowtail\seqsplit_{\genop}(t,n)\\
+               & \indent\left\langle \massage(a),\massage(b)\right\rangle 
+              \end{aligned}
+              \\
+              \\
+               & \begin{aligned} & \seqsplit_{\genop}(\emptytup_{\baltree},n)\to\left\langle \emptytup_{\baltree},\emptytup_{\baltree}\right\rangle \\
+               & \seqsplit_{\genop}(t\equiv\left\langle l,m,r\right\rangle _{\baltree},n)\to
+              \end{aligned}
+              \\
+               & \begin{aligned} & \indent n<\size(l) &  & \Rightarrow\seqsplit_{l}(l,m,r,n)\\
+               & \indent n>\size(l)+1 &  & \Rightarrow\seqsplit_{r}(l,m,r,n-(\size(l)+1)\\
+               & \indent n=\size(l) &  & \Rightarrow\left\langle l,\left\langle \emptytup_{\baltree},m,r\right\rangle _{\baltree}\right\rangle \\
+               & \indent n=\size(l)+1 &  & \Rightarrow\left\langle \left\langle l,m,\emptytup_{\baltree}\right\rangle _{\baltree},r\right\rangle 
+              \end{aligned}
+              \\
+              \\
+               & \begin{aligned} & \seqsplit_{l}(l,m,r,n)\to\\
+               & \indent\left\langle a,b\right\rangle \leftarrowtail\seqsplit_{\genop}(l,n)\\
+               & \indent\left\langle a,\left\langle b,m,r\right\rangle _{\baltree}\right\rangle 
+              \end{aligned}
+              \\
+              \\
+               & \begin{aligned} & \seqsplit_{r}(l,m,r,n)\to\\
+               & \indent\left\langle a,b\right\rangle \leftarrowtail\seqsplit_{\genop}(r,n)\\
+               & \indent\left\langle \left\langle l,m,a\right\rangle _{\baltree},b\right\rangle 
+              \end{aligned}
+              \end{align*}
             @p -> @_ "Massage trees can be used to implement dynamic arrays efficently."
             @p -> @_ "The split operation is implemented as a variant of the splay operation."
             @h2 id:"linked-lists", ->
