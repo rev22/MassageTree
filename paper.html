@@ -26,7 +26,7 @@ ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
 .le-code-cont > .caption {
   text-align:center;
   width:100%;
-  font-size:75%;
+  font-size:80%;
 }
 .le-code-cont {
   /* margin: 0.8em 0; */
@@ -329,12 +329,12 @@ O(1)
                 </p>
                 <p>In this definition, the operator <span class="math">\(\oplus\)</span> returns the maximum of the two operands.</p>
                 <h1 id="functional-splay-trees"><a href="#functional-splay-trees">Functional splay trees</a></h1>
-                <p>Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties (Sleator and Tarjan, 1985)</p>
+                <p>Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties (Sleator and Tarjan, 1985:656)</p>
                 <ul>
                     <li>bringing to the top the target node</li>
                     <li>reduce the height of the tree along the path to the target node</li>
                 </ul>
-                <p>The novel algorithm presented here subdivides the splay operation into a descending (2.16) phase, which accumulates lists of trees on either side of the path to the target node, and an ascending (2.18) phase, during which the lists of trees are assembled into a pair of trees of reduced height and placed as subtreres on either side of the target node.</p>
+                <p>The novel algorithm presented here subdivides the splay operation into a descending phase, which accumulates lists of trees on either side of the path to the target node, and an ascending phase, during which the lists of trees are assembled into a pair of trees of reduced height and placed as subtrees on either side of the target node.</p>
                 <p>
                     <div class="le-code-cont">
                         <div class="leCode math">\[
@@ -398,7 +398,7 @@ O(1)
 \]</div>
                     </div>
                 </p>
-                <p>It is equivalently possible to perform the splay operation  the corresponding function for generic binary search tree: <span class="math">\[
+                <p>It is equivalently possible to perform the splay operation before or after the corresponding function for a generic binary search tree: <span class="math">\[
 \begin{equation}
 \begin{cases}
  &amp; f_{1}(t,x)=\splay(f_{\genop}(t,x),x)\\
@@ -527,7 +527,7 @@ ode_{l},t,f)
                     <p>The descending phase starts with the tree to splay and two lists of trees initially empty, each representing one half of a finger structure. During each step of the descending phase, if the node to bring to the top is not the one being visited, the subtree more distant to the target node is added to the the corresponding list in the finger structure. When the node to bring to the top is visited, a new tree is assembled, by first assembling each of the lists of trees in each side into a tree, and then adding the resulting trees as subtrees of the top node. Therefore, the resulting tree has an height of one plus the maximum height of the subtrees assembled from the lists in the finger structure. Thus proving that the height of the assembled subtree can at most increase by a constant compared to the original tree, is equivalent to proving this lemma.</p>
                     <p>Let <span class="math">\(m\in\mathbb{N}\)</span> be the height of the tree before the splay operation, and <span class="math">\(n\in\mathbb{N}\)</span> the number of descend steps during the splay operation. The maximum possible heights of subtrees added to any of the lists during descend steps can then be described by the sequence <span class="math">\(\left\langle m-1,m-2,\ldots,m-n\right\rangle \)</span>, of which the heights of subtrees added to one of the two lists are a subsequence, with the form <span class="math">\(\left\langle m-n_{1},m-n_{2},\ldots,m-n_{s}\right\rangle \)</span>, where <span class="math">\(n_{x}+1\le n{}_{x+1}\)</span> and <span class="math">\(s\)</span> is the size of the subsequence. It may be noted that <span class="math">\(n_{x}\ge x\)</span></p>
                     <p>During the assembling phase, the subtrees are assembled back in reverse order, starting from the last node, also the one with the minimum of the maximum possible heights of the subtrees.</p>
-                    <p>According to the build algorithm defined in (2.21) the maximum height <span class="math">\(\height_{m}\)</span> of a tree assembled from such a subsequence is defined recursively by:</p>
+                    <p>According to the build algorithm defined in our functional splaying algorithm, the maximum height <span class="math">\(\height_{m}\)</span> of a tree assembled from such a subsequence is defined recursively by:</p>
                     <p><span class="math">\[
 \begin{eqnarray*}
  &amp;  &amp; \height_{m}(a,b,c,d\ldots)=\height_{m}(a\boxplus(b\boxplus c),d...)\\
@@ -555,7 +555,7 @@ ode_{l},t,f)
 \end{eqnarray*}
 \]</span></p>
                     <p>In this case the term with the maximum possible value is <span class="math">\((x_{2}+3)\)</span>. By applying the same steps as above, one similarly obtains that the maximum possible height for the assembled subtree is <span class="math">\(m+1\)</span>.</p>
-                    <p>The maximum possible height increase of a tree after the splay operation defined in (2.19) is 2.</p>
+                    <p>The maximum possible height increase of a tree after our splay operation is 2.</p>
                     <p class="proofpart proofend">∎</p>
                 </section>
                 <section>
@@ -566,11 +566,12 @@ ode_{l},t,f)
                     <em class="proofpart">Proof:</em>
                     <p>The maximum height increase after a suitably designed splay operation is constant.</p>
                     <p>The height increase after a basic binary tree lookup is zero.</p>
-                    <p>The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth.</p>
+                    <p>The maximum height increase after a basic binary tree insert is one, in the case a leaf is added to a node of maximum depth.</p>
+                    <p>There is no height increase after a basic binary tree deletion.</p>
                     <p>Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant.</p>
                     <p class="proofpart proofend">∎</p>
                 </section>
-                <h1 id="massage-operation"><a href="#massage-operation">Incrementally rebalancing a splay tree: the massage operation:</a></h1>
+                <h1 id="massage-operation"><a href="#massage-operation">Incrementally rebalancing a splay tree: the massage operation</a></h1>
                 <p>The <span class="math">\(\massage\)</span> function described here requires that tree nodes are annotated with balance information. When the balancedness of the tree falls below a defined threshold, <span class="math">\(\balancedness_{\massage}\)</span>, the massage function descends the tree along the deepest path and reassembles it to reduces its height by a constant factor. This height reduction is analogous to the <span class="math">\(\splay\)</span> operation and is the main rebalancing operation of massage trees.</p>
                 <p>The full massage operation is <span class="math">\(O(\log n)\)</span>, but when <span class="math">\(\balancedness_{\massage}\)</span> is sufficiently small it occurs every <span class="math">\((rk)^{-1}\log n\)</span> operations, where <span class="math">\(n\)</span> is the size of the tree, <span class="math">\(r\)</span> is the height reduction constant and <span class="math">\(k\)</span> is the maximum height increase after each operation. The amortized time complexity of the massage operation is then <span class="math">\(O(rk\log n/\log n)=O(1)\)</span>. </p>
                 <p>
@@ -628,7 +629,7 @@ c\\
 \]</div>
                     </div>
                 </p>
-                <p>The massage operation may equivalently be performed  or  the corresponding function for splay trees: <span class="math">\[
+                <p>The massage operation may equivalently be performed before or after the corresponding function for splay trees: <span class="math">\[
 \begin{equation}
 \begin{cases}
  &amp; f_{1}(t,x)=\massage(f_{\splayop}(t,x))\\

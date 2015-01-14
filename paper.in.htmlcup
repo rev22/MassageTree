@@ -50,7 +50,7 @@ require('html2cup').modApply ->
                 .le-code-cont > .caption {
                   text-align:center;
                   width:100%;
-                  font-size:75%;
+                  font-size:80%;
                 }
                 .le-code-cont {
                   /* margin: 0.8em 0; */
@@ -229,17 +229,22 @@ require('html2cup').modApply ->
                 @S().a href:"#functional-splay-trees", -> @_ "Functional splay trees"
             @p ->
               @_ "Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties "
-              @_ "(Sleator and Tarjan, 1985)" # ref 'selfadj'
+              @_ "(Sleator and Tarjan, 1985:656)" # ref 'selfadj'
             @ul ->
                 @li -> @_ "bringing to the top the target node"
                 @li -> @_ "reduce the height of the tree along the path to the target node"
-            @p -> @_ "The novel algorithm presented here subdivides the splay operation into a descending (2.16) phase, which accumulates lists of trees on either side of the path to the target node, and an ascending (2.18) phase, during which the lists of trees are assembled into a pair of trees of reduced height and placed as subtreres on either side of the target node."
+            @p ->
+              @_ "The novel algorithm presented here subdivides the splay operation into a descending "
+              # (2.16)
+              @_ "phase, which accumulates lists of trees on either side of the path to the target node, and an ascending "
+              # (2.18)
+              @_ "phase, during which the lists of trees are assembled into a pair of trees of reduced height and placed as subtrees on either side of the target node."
             leCode caption: 'implementation of a functional splay operation', code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\splay(\\emptytup_{\\gentree},x) &amp;  &amp; \\to\\emptytup_{\\gentree}\\\\\n &amp; \\splay(t,x) &amp;  &amp; \\to\\descend(x,t,\\left\\langle \\left[\\right],\\left[\\right]\\right\\rangle )\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend(x,t\\equiv\\left\\langle l,m,r\\right\\rangle _{\\gentree},f)\\to\\end{aligned}\n\\\\\n &amp; \\begin{aligned} &amp; \\indent x&lt;m\\Rightarrow\\descend^{\\prime}(x,l,\\add_{r}(m,r,f),t,f)\\\\\n &amp; \\indent x&gt;m\\Rightarrow\\descend^{\\prime}(x,r,\\add_{l}(m,l,f),t,f)\\\\\n &amp; \\indent x=m\\Rightarrow\\ascend(m,l,r,f)\n\\end{aligned}\n\\nonumber \\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\descend^{\\prime}(\\_,\\emptytup_{\\gentree},\\_,\\left\\langle l,m,r\\right\\rangle _{\\gentree},f) &amp;  &amp; \\to\\ascend(m,l,r,f)\\\\\n &amp; \\descend^{\\prime}(x,t,f,\\_,\\_) &amp;  &amp; \\to\\descend(x,t,f)\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\ascend(m,l,r,\\left\\langle l_{f,},r_{f}\\right\\rangle )\\to\\\\\n &amp; \\indent\\left\\langle \\build(\\node_{l},l,l_{f}),m,\\build(\\node_{r},r,r_{f})\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\add_{r}(m,r,\\left\\langle f_{l},f_{r}\\right\\rangle )\\to\\left\\langle f_{l},\\left[\\left\\langle m,r\\right\\rangle ,f_{r}\\dots\\right]\\right\\rangle \\\\\n &amp; \\add_{l}(m,l,\\left\\langle f_{l},f_{r}\\right\\rangle )\\to\\left\\langle \\left[\\left\\langle m,l\\right\\rangle ,f_{l}\\dots\\right],f_{r}\\right\\rangle \n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\node_{r}(l,m,r)\\to\\left\\langle l,m,r\\right\\rangle _{\\gentree}\\\\\n &amp; \\node_{l}(r,m,l)\\to\\left\\langle l,m,r\\right\\rangle _{\\gentree}\n\\end{aligned}\n\\\\\n\\nonumber \\\\\n &amp; \\begin{aligned} &amp; \\build(n,t,\\left[\\left\\langle v_{a},t_{a}\\right\\rangle ,\\left\\langle v_{b},t_{b}\\right\\rangle ,f\\dots\\right])\\to\\build(n,n(t,v_{a},n(t_{a},v_{b},t_{b}),f))\\\\\n &amp; \\build(n,t,\\left[\\left\\langle v_{a},t_{a}\\right\\rangle \\right])\\to n(t,v_{a},t_{a})\\\\\n &amp; \\build(n,t,\\left[\\right])\\to t\n\\end{aligned}\n\\end{align}\n\\]"
             @p -> @_ "This splay variant has been shown experimentally to be more performant than a top-down functional splaying algorithm, and has the additional advantages of a concise implementation and simpler analysis."
             @p -> @_ "The splay operation is typically performed before other basic operations to bring the target node to the top, and to optimize subsequent operations in the same locality of reference:"
             leCode code: "\\[\n\\begin{align}\n &amp; \\begin{aligned} &amp; \\member_{\\splayop}(t,x)\\to(\\splay(t,x),\\member_{\\genop}(\\splay(t,x),x))\\\\\n &amp; \\indent t\\leftarrowtail\\splay(t,x)\\\\\n &amp; \\indent\\left\\langle t,\\member_{\\genop}(t,x)\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\splayop}(t,x)\\to\\insert_{\\genop}(\\splay(t,x),x)\\\\\n &amp; \\delete_{\\splayop}(t,x)\\to\\delete_{\\genop}(\\splay(t,x),x)\n\\end{aligned}\n\\end{align}\n\\]"
             @p ->
-                @_ "It is equivalently possible to perform the splay operation  the corresponding function for generic binary search tree: "
+                @_ "It is equivalently possible to perform the splay operation before or after the corresponding function for a generic binary search tree: "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{cases}\n &amp; f_{1}(t,x)=\\splay(f_{\\genop}(t,x),x)\\\\\n &amp; f_{2}(t,x)=f_{\\genop}(\\splay(t,x),x)\n\\end{cases}\n\\end{equation}\n\\]"
             @h2 id:"integrated-splay-tree-operations", ->
                 @S().a href:"#integrated-splay-tree-operations", -> @_ "Integrated splay tree operations"
@@ -322,7 +327,10 @@ require('html2cup').modApply ->
                 @Z().span class:"math", -> @_ "\\(n_{x}\\ge x\\)"
               @p -> @_ "During the assembling phase, the subtrees are assembled back in reverse order, starting from the last node, also the one with the minimum of the maximum possible heights of the subtrees."
               @p ->
-                @_ "According to the build algorithm defined in (2.21) the maximum height "
+                @_ "According to the build algorithm defined in "
+                # @_ "(2.21) "
+                @_ "our functional splaying algorithm, "
+                @_ "the maximum height "
                 @span class:"math", -> @_ "\\(\\height_{m}\\)"
                 @_ " of a tree assembled from such a subsequence is defined recursively by:"
               @p ->
@@ -368,15 +376,19 @@ require('html2cup').modApply ->
                 @_ ". By applying the same steps as above, one similarly obtains that the maximum possible height for the assembled subtree is "
                 @span class:"math", -> @_ "\\(m+1\\)"
                 @_ "."
-              @p -> @_ "The maximum possible height increase of a tree after the splay operation defined in (2.19) is 2."
+              @p -> @_ "The maximum possible height increase of a tree after our splay operation is 2."
             lemma ->
               @span "It is possible to design basic operations on splay trees whose maximum height increase is constant. Basic operations on splay trees considered in this lemma are lookup, insert and delete."
             proof ->
               @p -> @_ "The maximum height increase after a suitably designed splay operation is constant."
               @p -> @_ "The height increase after a basic binary tree lookup is zero."
-              @p -> @_ "The maximum height increase after a basic binary tree insert (2.4) is one, in the case a leaf is added to a node of maximum depth."
+              @p ->
+                @_ "The maximum height increase after a basic binary tree insert "
+                # @_ "(2.4) "
+                @_ "is one, in the case a leaf is added to a node of maximum depth."
+              @p -> @_ "There is no height increase after a basic binary tree deletion."
               @p -> @_ "Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant."
-            @h1 id:"massage-operation", -> @S().a href:"#massage-operation", -> @_ "Incrementally rebalancing a splay tree: the massage operation:"
+            @h1 id:"massage-operation", -> @S().a href:"#massage-operation", -> @_ "Incrementally rebalancing a splay tree: the massage operation"
             @p ->
                 @_ "The "
                 @span class:"math", -> @_ "\\(\\massage\\)"
@@ -412,7 +424,7 @@ require('html2cup').modApply ->
                 @_ " is combined with each of the defined operations on splay trees: "
             leCode code: "\\[\n\\begin{equation}\n\\begin{aligned} &amp; \\member_{\\massageop}(t,x)\\to\\\\\n &amp; \\indent\\left\\langle t,r\\right\\rangle \\leftarrowtail\\member_{\\splayop}(t,x)\\\\\n &amp; \\indent\\left\\langle \\massage(t),r\\right\\rangle \\\\\n\\\\\n &amp; \\insert_{\\massageop}(t,x)\\to\\massage(\\insert_{\\splayop}(t,x))\\\\\n &amp; \\delete_{\\massageop}(t,x)\\to\\massage(\\delete_{\\splayop}(t,x))\n\\end{aligned}\n\\end{equation}\n\\]"
             @p ->
-                @_ "The massage operation may equivalently be performed  or  the corresponding function for splay trees: "
+                @_ "The massage operation may equivalently be performed before or after the corresponding function for splay trees: "
                 @Z().span class:"math", -> @_ "\\[\n\\begin{equation}\n\\begin{cases}\n &amp; f_{1}(t,x)=\\massage(f_{\\splayop}(t,x))\\\\\n &amp; f_{2}(t,x)=f_{\\splayop}(\\massage(t),x)\n\\end{cases}\n\\end{equation}\n\\]"
             @p -> @_ "The freedom in the order execution of the splay and massage operations, allows embedding the rebalancing operation into the splay operation."
             @h1 id:"experimental-results", ->
