@@ -85,7 +85,7 @@ ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
                             </ul>
                         </li>
                         <li>
-                            <a href="#massage-operation">Incrementally rebalancing a splay tree: the massage operation</a>
+                            <a href="#incrementally-rebalancing-a-splay-tree-the-massage-operation">Incrementally rebalancing a splay tree: the massage operation</a>
                             <ul>
                                 <li>
                                     <a href="#operations-on-massage-trees">Operations on massage trees</a>
@@ -98,19 +98,34 @@ ul { padding-top: 0; padding-bottom:0; margin-top: 0; margin-bottom: 0; }
                         <li>
                             <a href="#applications">Applications</a>
                             <ul>
-                                <li><a href="#queues">Queues</a></li>
-                                <li><a href="#deques">Deques</a></li>
-                                <li><a href="#dynamic-arrays">Dynamic arrays</a></li>
-                                <li><a href="#linked-lists">Linked-lists</a></li>
-                                <li><a href="#ropes">Ropes</a></li>
+                                <li>
+                                    <a href="#queues">Queues</a>
+                                </li>
+                                <li>
+                                    <a href="#deques">Deques</a>
+                                </li>
+                                <li>
+                                    <a href="#dynamic-arrays">Dynamic arrays</a>
+                                </li>
+                                <li>
+                                    <a href="#linked-lists">Linked-lists</a>
+                                </li>
+                                <li>
+                                    <a href="#ropes">Ropes</a>
+                                </li>
                             </ul>
                         </li>
-                        <li><a href="#conclusions">Conclusions</a></li>
-                        <li><a href="#literature-cited">Literature Cited</a>
+                        <li>
+                            <a href="#conclusions">Conclusions</a>
+                        </li>
+                        <li>
+                            <a href="#literature-cited">Literature Cited</a>
                         </li>
                     </ul>
                 </div>
-                <h2 id="introduction"><a href="#introduction">Introduction</a></h2>
+                <h1 id="introduction">
+                    <a href="#introduction">Introduction</a>
+                </h1>
                 <p>Among the data structures available to programmers, some of them, like lists, stacks or queues are specialized for sequential, or local-access operations. Others, like balanced trees, are specialized for random-access operations.</p>
                 <p>
 The goal of this paper is addressing the duality between these data-structures, by providing algorithms for a generic tree structure reconciling constant time bounds for sequential and local operations, with logarithmic time bounds for random-access operations. For brevity in this paper ``focal'' will be used to indicate either sequential or local type of accesses and combinations of them.
@@ -241,7 +256,9 @@ O(1)
                     </p>
                 </div>
                 <p>In the context of this paper, <span class="math">\(\OrderedSet\)</span> is a totally ordered set, while <span class="math">\(\member,\insert,\delete\)</span> are functions whose type can be described by the set <span class="math">\(\left\{ (t_{1},x)\to t_{2}|x\in\OrderedSet\land t_{x}\in\mathbf{T}\right\} \)</span>, where <span class="math">\(\mathbf{T}\)</span> is the data type of a tree set implementation.</p>
-                <h2 id="binary-search-trees"><a href="#binary-search-trees">Binary search trees</a></h2>
+                <h2 id="binary-search-trees">
+                    <a href="#binary-search-trees">Binary search trees</a>
+                </h2>
                 <p>It is straightforward to define simple <span class="math">\(\member\)</span> and <span class="math">\(\insert\)</span> operations on a generic binary search tree:</p>
                 <p>
                     <div class="le-code-cont">
@@ -274,7 +291,9 @@ O(1)
                     </div>
                 </p>
                 <p>A delete operation is necessarily more complex than insert on binary search trees, since deletions can also occur in a node with branches. Implementations of this operation for generic binary search trees are omitted for brevity and not used by other code of this paper.</p>
-                <h2 id="evaluating-tree-balance"><a href="#evaluating-tree-balance">Evaluating tree balance</a></h2>
+                <h2 id="evaluating-tree-balance">
+                    <a href="#evaluating-tree-balance">Evaluating tree balance</a>
+                </h2>
                 <p>Basic operations on binary trees have worst-case time bounds proportional to the height of the tree, defined as the distance between the root node and the deepest node of the tree.</p>
                 <section>
                     <em class="proofpart">Lemma:</em>
@@ -328,7 +347,9 @@ O(1)
                     </div>
                 </p>
                 <p>In this definition, the operator <span class="math">\(\oplus\)</span> returns the maximum of the two operands.</p>
-                <h1 id="functional-splay-trees"><a href="#functional-splay-trees">Functional splay trees</a></h1>
+                <h1 id="functional-splay-trees">
+                    <a href="#functional-splay-trees">Functional splay trees</a>
+                </h1>
                 <p>Splay trees do not require any node annotation, thus they can use the same data structure primitives as other binary search trees. The characterizing operation on splay trees is the splay operation, having two crucial properties (Sleator and Tarjan, 1985:656)</p>
                 <ul>
                     <li>bringing to the top the target node</li>
@@ -378,7 +399,7 @@ O(1)
 \end{aligned}
 \end{align}
 \]</div>
-                        <div class="caption">implementation of a functional splay operation</div>
+                        <div class="caption">Implementation of a functional splay operation</div>
                     </div>
                 </p>
                 <p>This splay variant has been shown experimentally to be more performant than a top-down functional splaying algorithm, and has the additional advantages of a concise implementation and simpler analysis.</p>
@@ -406,7 +427,9 @@ O(1)
 \end{cases}
 \end{equation}
 \]</span></p>
-                <h2 id="integrated-splay-tree-operations"><a href="#integrated-splay-tree-operations">Integrated splay tree operations</a></h2>
+                <h2 id="integrated-splay-tree-operations">
+                    <a href="#integrated-splay-tree-operations">Integrated splay tree operations</a>
+                </h2>
                 <p>For optimal performance of implementations of splay trees, it is adviced to embed the splay operation into the basic binary search tree operation.</p>
                 <p>
                     <div class="le-code-cont">
@@ -512,7 +535,9 @@ ode_{l},t,f)
                         <div class="caption">Implementation of a delete+splay operation</div>
                     </div>
                 </p>
-                <h2 id="analysis-of-the-splay-operation"><a href="#analysis-of-the-splay-operation">Analysis of the splay operation</a></h2>
+                <h2 id="analysis-of-the-splay-operation">
+                    <a href="#analysis-of-the-splay-operation">Analysis of the splay operation</a>
+                </h2>
                 <section>
                     <em class="proofpart">Lemma:</em>
                     <span>The maximum height increase of a tree after a suitably designed splay operation is constant.</span>
@@ -571,48 +596,39 @@ ode_{l},t,f)
                     <p>Thus the maximum height increase after performing a splay operation and a basic binary tree operation, in any order, is constant.</p>
                     <p class="proofpart proofend">∎</p>
                 </section>
-                <h1 id="massage-operation"><a href="#massage-operation">Incrementally rebalancing a splay tree: the massage operation</a></h1>
+                <h1 id="incrementally-rebalancing-a-splay-tree-the-massage-operation">
+                    <a href="#incrementally-rebalancing-a-splay-tree-the-massage-operation">Incrementally rebalancing a splay tree: the massage operation</a>
+                </h1>
                 <p>The <span class="math">\(\massage\)</span> function described here requires that tree nodes are annotated with balance information. When the balancedness of the tree falls below a defined threshold, <span class="math">\(\balancedness_{\massage}\)</span>, the massage function descends the tree along the deepest path and reassembles it to reduces its height by a constant factor. This height reduction is analogous to the <span class="math">\(\splay\)</span> operation and is the main rebalancing operation of massage trees.</p>
                 <p>The full massage operation is <span class="math">\(O(\log n)\)</span>, but when <span class="math">\(\balancedness_{\massage}\)</span> is sufficiently small it occurs every <span class="math">\(k\log n\)</span> operations, where <span class="math">\(n\)</span> is the size of the tree and <span class="math">\(k\)</span> is a constant determined by the exact algorithm used. The amortized time complexity of the massage operation is then <span class="math">\(O(1)\)</span>. </p>
                 <p>
                     <div class="le-code-cont">
-                        <div class="leCode math">\[
-\begin{align}
- &amp; \begin{aligned} &amp; \massage(\emptytup_{\baltree})\to\emptytup_{\baltree}\\
- &amp; \massage(t)\to\\
- &amp; \indent\balancedness(t)&lt;\balancedness_{\massage}\Rightarrow\massage_{a}(t)\\
- &amp; \indent\balancedness(t)\ge\balancedness_{\massage}\Rightarrow t
-\end{aligned}
-\\
-\nonumber \\
- &amp; \begin{aligned} &amp; \massage_{a}(\left\langle l,m,r\right\rangle _{\baltree})\to\end{aligned}
-c\\
- &amp; \begin{aligned} &amp; \indent\height(l)&lt;\height(r)\Rightarrow\node(l,m,\massage_{b}(r))\\
- &amp; \indent\height(l)\ge\height(r)\Rightarrow\node(\massage_{b}(l),m,r)
+                        <div class="leCode math">\begin{align}
+ & \begin{aligned} & \massage(\emptytup_{\baltree})\to\emptytup_{\baltree}\\
+ & \massage(t)\to\\
+ & \indent\balancedness(t)<\balancedness_{\massage}\Rightarrow\descend_{\massage}(t, \left\langle \left[\right],\left[\right]\right\rangle )\\
+ & \indent\balancedness(t)\ge\balancedness_{\massage}\Rightarrow t
 \end{aligned}
 \\
 \\
- &amp; \begin{aligned} &amp; \massage_{b}(t\equiv\left\langle l,m,r\right\rangle _{\baltree})\to\end{aligned}
-\\
- &amp; \begin{aligned} &amp; \indent\height(l)&lt;\height(r)\Rightarrow\massage_{r}(t, &amp; \left\langle l_{r},m_{r},r_{r}\right\rangle _{\baltree} &amp; \mapsto\left\langle \left\langle l,m,l_{r}\right\rangle _{\baltree},m_{r},r_{r}\right\rangle _{\baltree})\\
- &amp; \indent\height(l)\ge\height(r)\Rightarrow\massage_{l}(t, &amp; \left\langle l_{l},m_{l},r_{l}\right\rangle _{\baltree} &amp; \mapsto\left\langle l_{l},m_{l},\left\langle r_{l},m,r\right\rangle _{\baltree}\right\rangle _{\baltree})
-\end{aligned}
-\\
-\nonumber \\
- &amp; \begin{aligned} &amp; \massage_{l}(t\equiv\left\langle \emptytup_{\baltree},m,r\right\rangle _{\baltree},x,f)\to t\\
- &amp; \massage_{l}(\left\langle l,m,r\right\rangle _{\baltree},x,f)\to f(\massage_{a}(l));
-\end{aligned}
+& \begin{aligned} & \descend_{\massage}(t\equiv\left\langle l,m,r\right\rangle _{\baltree},f)\to\end{aligned} \\
+& \begin{aligned}
+   & \indent\height(l)<\height(r)\Rightarrow\descend^{\prime}_{\massage}(l,\add_{r}(m,r,f),t,f)\\
+   & \indent\height(l)\ge\height(r)\Rightarrow\descend^{\prime}_{\massage}(r,\add_{l}(m,l,f),t,f)
+   \end{aligned}
 \\
 \\
- &amp; \begin{aligned} &amp; \massage_{r}(t\equiv\left\langle l,m,\emptytup_{\baltree}\right\rangle _{\baltree},x,f)\to t\\
- &amp; \massage_{r}(\left\langle l,m,r\right\rangle _{\baltree},x,f)\to f(\massage_{a}(r));
-\end{aligned}
-\end{align}
-\]</div>
+& \begin{aligned}
+  & \descend^{\prime}_{\massage}(\emptytup_{\baltree},\_,\left\langle l,m,r\right\rangle _{\baltree},f) &  & \to\ascend(m,l,r,f)\\
+  & \descend^{\prime}_{\massage}(t,f,\_,\_) &  & \to\descend_{\massage}(t,f)
+  \end{aligned}
+\end{align}</div>
                         <div class="caption">Implementation of an incremental rebalancing operation for splay trees</div>
                     </div>
                 </p>
-                <h2 id="operations-on-massage-trees"><a href="#operations-on-massage-trees">Operations on massage trees</a></h2>
+                <h2 id="operations-on-massage-trees">
+                    <a href="#operations-on-massage-trees">Operations on massage trees</a>
+                </h2>
                 <p>As with <span class="math">\(\splay\)</span>, <span class="math">\(\massage\)</span> is combined with each of the defined operations on splay trees: </p>
                 <p>
                     <div class="le-code-cont">
@@ -638,12 +654,18 @@ c\\
 \end{equation}
 \]</span></p>
                 <p>The freedom in the order execution of the splay and massage operations, allows embedding the rebalancing operation into the splay operation.</p>
-                <h1 id="experimental-results"><a href="#experimental-results">Experimental results</a></h1>
+                <h1 id="experimental-results">
+                    <a href="#experimental-results">Experimental results</a>
+                </h1>
                 <p>
                     <em>Section to be expanded...</em>
                 </p>
-                <h1 id="applications"><a href="#applications">Applications</a></h1>
-                <h2 id="queues"><a href="#queues">Queues</a></h2>
+                <h1 id="applications">
+                    <a href="#applications">Applications</a>
+                </h1>
+                <h2 id="queues">
+                    <a href="#queues">Queues</a>
+                </h2>
                 <p>Queue operations can be defined efficiently on massage trees: </p>
                 <p>
                     <div class="le-code-cont">
@@ -657,7 +679,9 @@ c\\
 \]</div>
                     </div>
                 </p>
-                <h2 id="deques"><a href="#deques">Deques</a></h2>
+                <h2 id="deques">
+                    <a href="#deques">Deques</a>
+                </h2>
                 <p>Similarly, deque operations can be defined on massage trees:</p>
                 <p>
                     <div class="le-code-cont">
@@ -674,7 +698,9 @@ c\\
                     </div>
                 </p>
                 <p>The <span class="math">\(\splay_{\seqfirst,\seqlast}\)</span> operation splays both the first and the last node of the tree. This is necessary to make subsequent accesses to any of the ends of the deque constant-time.</p>
-                <h2 id="dynamic-arrays"><a href="#dynamic-arrays">Dynamic arrays</a></h2>
+                <h2 id="dynamic-arrays">
+                    <a href="#dynamic-arrays">Dynamic arrays</a>
+                </h2>
                 <p>
                     <div class="le-code-cont">
                         <div class="leCode math">\begin{align*}
@@ -727,15 +753,21 @@ c\\
                 </p>
                 <p>Massage trees can be used to implement dynamic arrays efficently.</p>
                 <p>The split operation is implemented as a variant of the splay operation.</p>
-                <h2 id="linked-lists"><a href="#linked-lists">Linked-lists</a></h2>
+                <h2 id="linked-lists">
+                    <a href="#linked-lists">Linked-lists</a>
+                </h2>
                 <p>Massage trees support linked-list operations.</p>
-                <h2 id="ropes"><a href="#ropes">Ropes</a></h2>
+                <h2 id="ropes">
+                    <a href="#ropes">Ropes</a>
+                </h2>
                 <p>Massage trees make it possible to implement a functional alternative to gap buffers; with additional advantages:</p>
                 <ul>
                     <li>performance never degrades to linear for any operations or worst cases</li>
                     <li>straightforward support of versioning and undo</li>
                 </ul>
-                <h1 id="conclusions"><a href="#conclusions">Conclusions</a></h1>
+                <h1 id="conclusions">
+                    <a href="#conclusions">Conclusions</a>
+                </h1>
                 <p>Massage Trees:<ul>
                         <li>extend the applications of self-adjusting trees to areas initially covered only by balanced trees.</li>
                         <li>extend the applications of balanced trees to areas so far only covered by ad-hoc structures, like queues, lists or stacks.</li>
@@ -746,7 +778,9 @@ c\\
                         <li>amortized constant times for focal operations</li>
                     </ul>
                 </p>
-                <h1 id="literature-cited">Literature Cited</h1>
+                <h1 id="literature-cited">
+                    <a href="#literature-cited">Literature Cited</a>
+                </h1>
                 <p>Daniel Dominic Sleator and Robert Endre Tarjan, 1985. Self-Adjusting Binary Search Trees.
 AT&T Bell Laboratories, Murray Hill, NJ; Journal of the Association for Computing Machinery. Vol. 32, No. 3, July 1985, pp. 652-686.
 </p>

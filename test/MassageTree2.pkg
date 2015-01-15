@@ -1,5 +1,3 @@
-# MassageTree.pkg - A reference implementation for Massage Trees
-
 # Copyright (c) 2014 Michele Bini <michele.bini@gmail.com>
 
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +15,7 @@
 
 # Requires: standard
 
-package massage_tree {
+package massage_tree_2 {
     package float = eight_byte_float;
 
     desc = "Massage tree 2.0.0-pre.7 r14 b99";

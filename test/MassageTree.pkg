@@ -1,5 +1,3 @@
-# MassageTree.pkg - A reference implementation for Massage Trees
-
 # Copyright (c) 2014 Michele Bini <michele.bini@gmail.com>
 
 # This program is free software: you can redistribute it and/or modify
@@ -20,13 +18,13 @@
 package massage_tree {
     package float = eight_byte_float;
 
-    desc = "Massage tree 2.0.0-pre.7 r14 b99";
+    desc = "Massage tree 1.1.0-pre.2";
     
     Height = Int;
     Size = Int;
     Tree(X) = EMPTY | NODE((Height, Size), Tree(X), X, Tree(X));
 
-    infix my 50 (<=>); # comparison operator: (X, X) -> (LESS | GREATER | EQUAL)
+    infix my 50 (<=>); # comparison operator: (X, X) -> LESS | GREATER | EQUAL
     
     fun  size(EMPTY) => 0;
 	 size(NODE((_,s),_,_,_)) => s;
@@ -99,28 +97,26 @@ package massage_tree {
     fun node_r(l, m, r) = node(l, m, r);
     fun node_l(r, m, l) = node(l, m, r);
     
-    fun build_splay node = build where
-	 fun  build(t, (v_a, t_a) ! (v_b, t_b) ! f) => build(node(t, v_a, node(t_a, v_b, t_b)), f);
-	      build(t, [ (v_a, t_a) ]) => node(t, v_a, t_a);
-	      build(t, []) => t;
-	 end;
-    end;
-    
-    fun ascend_splay(x,l,r, (l_f, r_f)) =
-	node(build_splay node_l (l, l_f), x, build_splay node_r (r, r_f));
-	 
     fun splay (<=>) = splay where
+	 fun build node = build where
+	      fun  build(t, (v_a, t_a) ! (v_b, t_b) ! f) => node(t, v_a, build(node(t_a, v_b, t_b), f));
+		   build(t, [ (v_a, t_a) ]) => node(t, v_a, t_a);
+		   build(t, []) => t;
+	      end;
+	 end;
+
+	 fun ascend(x,l,r, (l_f, r_f)) =
+	     node(build node_l (l, l_f), x, build node_r (r, r_f));
+	 
 	 fun  descend(x, n as (_,l,m,r),f) = case (x <=> m)
-	      LESS     => case l
-		   EMPTY => ascend_splay(m,l,r,f);
-		   NODE nn => descend(x,nn,add_r(m,r,f));
-	      esac;
-	      GREATER  => case r
-		   EMPTY => ascend_splay(m,l,r,f);
-		   NODE nn => descend(x,nn,add_l(m,l,f));
-	      esac;
-	      EQUAL    => ascend_splay(m,l,r,f);
-	 esac;
+	      LESS     => descend_deep(x,l, add_r(m,r,f), n,f);
+	      GREATER  => descend_deep(x,r, add_l(m,l,f), n,f);
+	      EQUAL    => ascend(x,l,r,f);
+	 esac
+	 also	 
+	 fun  descend_deep(_,EMPTY,_,(_,l,m,r),f)  => ascend(m,l,r,f);
+	      descend_deep(x,NODE n,f,_,_)              => descend(x,n,f);
+	 end;
 
 	 fun  splay(NODE t,x) => descend(x,t, ([],[]));
 	      splay(EMPTY, x) => EMPTY;
@@ -202,34 +198,77 @@ package massage_tree {
 	 fun delete_mas(t,x) = massage(delete_spl(t,x));
     end;
 
-    fun massage_rounds rounds = massage where
-	 fun  descend(n as (_,l,m,r),f,rounds) = case (int::compare(height(l), height(r)))
-	      GREATER  => case l
-		   EMPTY    => ascend_splay(m,l,r,f);
-		   NODE nn  => if (rounds == 1)
-			ascend_splay(m,l,r,f);
-		   else
-			descend(nn, add_r(m,r,f), rounds - 1);
-		   fi;
-	      esac;
-	      LESS     => case r
-		   EMPTY    => ascend_splay(m,l,r,f);
-		   NODE nn  => if (rounds == 1)
-			ascend_splay(m,l,r,f);
-		   else
-			descend(nn, add_l(m,l,f), rounds - 1);
-		   fi;
-	      esac;
-	      EQUAL    => ascend_splay(m,l,r,f);
-	 esac;
-
-	 fun  massage(NODE t) => descend(t, ([],[]), rounds);
-	      massage(EMPTY) => EMPTY;
-	 end;	 
+    fun  massage_loglog(EMPTY) => EMPTY;
+	 massage_loglog(NODE n) => descend_bal(n, ([],[])) where
+	      my balancedness_massage = 0.2;
+	      
+	      fun descend_bal(n,f) =
+		  case (float::compare(balancedness(n.1), balancedness_massage))
+		   GREATER  => ascend_massage(NODE n, pack_massage(f));
+		   _        => descend(n,f);
+	      esac
+	      also
+	      fun descend((_,l,m,r), f) = case (int::compare(height(l), height(r)))
+		   LESS  => descend_ii(r, add_l(m,l,f));
+		   _     => descend_ii(l, add_r(m,r,f));
+	      esac
+	      also
+	      fun  descend_ii(EMPTY, f)   => ascend_massage(EMPTY, pack_massage(f));
+		   descend_ii(NODE n, f)  => descend_bal(n,f);
+	      end;	 
+	 end;
     end;
-  
+    
+    fun member_llg (<=>) = member_mas where
+	 massage = massage_loglog;
+	 member_spl = member_spl (<=>);
+	 fun member_mas(t,x) = {
+	     my (t,r) = member_spl(t,x);
+	     (massage(t), r);
+	 };
+    end;
+
+    fun insert_llg (<=>) = insert_mas where
+	 massage = massage_loglog;
+	 insert_spl = insert_spl (<=>);
+	 fun insert_mas(t,x) = massage(insert_spl(t,x));
+    end;
+
+    fun delete_llg (<=>) = delete_mas where
+	 massage = massage_loglog;
+	 delete_spl = delete_spl (<=>);
+	 fun delete_mas(t,x) = massage(delete_spl(t,x));
+    end;
+
+    fun massage_rounds massage_k = massage where
+	 my balancedness_massage = 0.2;
+	 
+	 fun descend_bal(n,f,c) =
+	     case (float::compare(balancedness(n.1), balancedness_massage))
+	      GREATER  => ascend_massage(NODE n, pack_massage(f));
+	      _        => descend(n,f,c);
+	 esac
+	 also
+	 fun descend((_,l,m,r), f,c) = case (int::compare(height(l), height(r)))
+	      LESS  => descend_ii(r, add_l(m,l,f), c);
+	      _     => descend_ii(l, add_r(m,r,f), c);
+	 esac
+	 also
+	 fun  descend_ii(EMPTY,   f,c) => ascend_massage(EMPTY, pack_massage(f));
+	      descend_ii(NODE n,  f,c) => descend_rep(n,f,c);
+	 end
+	 also
+	 fun  descend_rep(n,f,0) => ascend_massage(NODE n, pack_massage(f));
+	      descend_rep(n,f,c) => descend_bal(n,f, c - 1);
+	 end;
+	 
+	 fun  massage(EMPTY) => EMPTY;
+	      massage(NODE n) => descend_bal(n, ([],[]), massage_k);
+	 end;
+    end;
+
     fun member_lin (<=>) = member_mas where
-	 massage = massage_rounds 14;
+	 massage = massage_rounds 5;
 	 member_spl = member_spl (<=>);
 	 fun member_mas(t,x) = {
 	     my (t,r) = member_spl(t,x);
@@ -238,13 +277,13 @@ package massage_tree {
     end;
 
     fun insert_lin (<=>) = insert_mas where
-	 massage = massage_rounds 14;
+	 massage = massage_rounds 5;
 	 insert_spl = insert_spl (<=>);
 	 fun insert_mas(t,x) = massage(insert_spl(t,x));
     end;
 
     fun delete_lin (<=>) = delete_mas where
-	 massage = massage_rounds 14;
+	 massage = massage_rounds 5;
 	 delete_spl = delete_spl (<=>);
 	 fun delete_mas(t,x) = massage(delete_spl(t,x));
     end;
